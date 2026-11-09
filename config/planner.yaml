@@ -1,0 +1,70 @@
+# Planner configuration: what information each workflow needs, what to ask, and the (PROPOSED) escalation evidence policy.
+# NOTE: the project document refers to an "approved escalation policy" (Problem 13 / SC-02) that has not been supplied. Everything under
+# `escalation` below is our PROPOSAL until that policy exists; the Planner labels its recommendations accordingly.
+
+max_questions: 4          # never interrogate: ask at most this many things at once, required items first
+max_times_asked: 2        # an item asked twice and still missing becomes "needs human follow-up" instead of a third ask
+
+# Checklists. `required: true` blocks "ready to proceed". `categories` (support only) limits an item to those issue categories.
+support:
+  - {key: provider_api,     required: true,  label: "Provider and API",                  question: "Which provider and API are you calling (for example Ola Directions, Google Distance Matrix)?"}
+  - {key: error_response,   required: true,  label: "Exact error or status",            question: "What exact error code or status do you receive, and can you paste the response body?",
+     categories: [outage, rate_limit, auth, coverage, invalid_request, data_quality, troubleshooting]}
+  - {key: timestamp,        required: true,  label: "When it started / time window",    question: "When did this start (date and time with timezone), and is it still happening?",
+     categories: [outage, rate_limit, data_quality, billing, auth, coverage]}
+  - {key: endpoint_request, required: true,  label: "Request and parameters",           question: "Can you share the request you send (endpoint and parameters, with the API key removed)?",
+     categories: [invalid_request, coverage, data_quality, auth, troubleshooting, performance]}
+  - {key: coordinates,      required: false, label: "Sample coordinates",               question: "Can you share a few sample coordinates (lat,lng) that fail, and one that works?",
+     categories: [coverage, data_quality, invalid_request]}
+  - {key: request_ids,      required: false, label: "Request IDs",                      question: "Can you share a few request IDs or trace IDs from failing calls?",
+     categories: [outage, rate_limit, data_quality]}
+  - {key: impact,           required: false, label: "Impact and scope",                 question: "How many requests are affected (all, a percentage, intermittent), and is this production?",
+     categories: [outage, rate_limit, data_quality, security]}
+  - {key: recent_change,    required: false, label: "Recent change",                    question: "Did anything change just before this started (deployment, key restriction, plan or billing change)?",
+     categories: [outage, rate_limit, auth, billing]}
+
+sales:
+  - {key: use_case,         required: true,  label: "Use case",                         question: "What are you building and who uses it (for example rider ETAs at checkout, fleet dispatch, address search)?"}
+  - {key: api_needs,        required: true,  label: "APIs needed",                      question: "Which capabilities do you need: directions/routing, distance matrix, address autocomplete, reverse geocoding?"}
+  - {key: volume,           required: true,  label: "Expected monthly volume",          question: "Roughly how many requests (or sessions / matrix elements) do you expect per month, now and in 12 months?"}
+  - {key: regions,          required: false, label: "Coverage regions",                 question: "Which cities or regions must be covered (India only, or other countries)?"}
+  - {key: budget,           required: false, label: "Budget",                           question: "Is there a monthly budget or price target we should stay within?"}
+  - {key: timeline,         required: false, label: "Timeline",                         question: "What is your target go-live or decision date?"}
+  - {key: constraints,      required: false, label: "Technical / compliance constraints", question: "Any constraints we should know: SLA, data residency, storing results, on-premise, latency?"}
+  - {key: decision_maker,   required: false, label: "Decision-maker",                   question: "Who makes the final decision, and who else is involved in the evaluation?"}
+
+# Suggested owner ROLE per category (roles, not people; a person is assigned when the proposal is approved).
+owner_roles:
+  security: "security lead + provider support"
+  outage: "support lead + provider engineering"
+  rate_limit: "support engineer (quota / plan)"
+  auth: "support engineer"
+  billing: "billing owner / account team"
+  data_quality: "support engineer + provider map-data team"
+  coverage: "support engineer"
+  invalid_request: "support engineer"
+  how_to: "support engineer"
+  troubleshooting: "support engineer"
+  performance: "support engineer"
+  licensing: "sales engineer + legal / compliance review"
+  pricing: "sales engineer"
+  capability_match: "sales engineer"
+  discovery: "account executive"
+  contract: "account manager"
+  competitive: "sales engineer"
+  migration: "solutions engineer"
+
+# PROPOSED escalation policy (pending the approved policy source, SC-02).
+escalation:
+  mode:                       # now = escalate immediately and collect evidence in parallel; after_info = collect evidence first
+    production_incident: now
+    security_incident: now
+    billing_incident: now
+    contract_request: now
+    data_quality: after_info
+  evidence_needed:            # checklist keys that make an escalation evidence-backed
+    production_incident: [error_response, timestamp]
+    security_incident: [timestamp]
+    billing_incident: [timestamp]
+    contract_request: [volume]
+    data_quality: [coordinates, timestamp]

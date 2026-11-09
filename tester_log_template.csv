@@ -1,0 +1,3 @@
+id,tab,question_or_message,outcome,sources_support_answer,severity,case_or_trace_id,time,notes
+1,Ask,"Ola Maps Reverse Geocoding for 20,000,000 lookups a month. Cost?",right,yes,none,,,
+2,Cases,"PRODUCTION: Ola Distance Matrix returns 5xx for all requests since 14:05 IST.",,,,,,

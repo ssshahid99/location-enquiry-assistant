@@ -1,0 +1,166 @@
+# Capability library for requirement -> documented capability matching (project problem 8).
+# Every evidence entry carries a VERBATIM quote from a fetched vendor page; tests/test_capabilities.py fails if a quote is not found.
+# A provider with NO evidence entry is reported as "not documented in the fetched sources": that is a GAP to check with the vendor,
+# never a statement that the provider lacks the capability.
+# `match`: regexes (case-insensitive) that make a customer requirement relevant to this capability.
+capabilities:
+  - id: traffic_aware_routing
+    label: "Traffic-aware routing / ETAs"
+    match: ['traffic', 'real[- ]?time', 'live (eta|traffic)', 'peak hours?', 'congestion']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Directions accepts departure_time (driving) and returns duration_in_traffic that takes traffic conditions into account.",
+           url: "https://developers.google.com/maps/documentation/directions/get-directions",
+           quote: "You can specify the departure_time to receive a route and trip duration (response field: duration_in_traffic) that take traffic conditions into account"}
+      Mapbox:
+        - {statement: "The driving-traffic profile accounts for live traffic; typical (non-live) duration is returned separately as duration_typical.",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "When using the driving-traffic profile, this will be returned as a float indicating the duration of the route under typical conditions (not taking into account live traffic)"}
+      Ola Maps:
+        - {statement: "Directions can include traffic congestion metadata (traffic_metadata) in the response.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Include traffic congestion metadata in the response"}
+      HERE:
+        - {statement: "Routing and Matrix use live traffic or historical traffic patterns depending on departure time.",
+           url: "https://docs.here.com/routing/docs/matrix-v8-intro",
+           quote: "Depending on departure time, either live traffic or historical traffic patterns are used"}
+
+  - id: route_optimization
+    label: "Multi-stop route optimisation (stop ordering)"
+    match: ['optimi[sz]e', 'stop order', 'order of (the )?(delivery )?stops', 'sequenc', 'travelling salesman', 'traveling salesman', 'multi[- ]?stop']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Directions (Legacy) can reorder waypoints with waypoints=optimize:true.",
+           url: "https://developers.google.com/maps/documentation/directions/get-directions",
+           quote: "optimize the provided route by rearranging the waypoints in a more efficient order"}
+      Ola Maps:
+        - {statement: "The Route Optimizer API reorders a list of waypoints to minimise overall travel time.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Computes the most efficient route by reordering a list of waypoints to minimize overall travel time"}
+      Mapbox:
+        - {statement: "The Optimization API plans a multi-stop route with stops in the most efficient order.",
+           url: "https://www.mapbox.com/pricing",
+           quote: "Plan a multi-stop driving, bicycling, and walking route with stops in the most efficient order"}
+      OSRM:
+        - {statement: "The Trip service solves the Travelling Salesman Problem (approximation).",
+           url: "https://project-osrm.org/docs/v5.24.0/api/",
+           quote: "The trip plugin solves the Traveling Salesman Problem"}
+
+  - id: walking_cycling
+    label: "Walking and cycling directions"
+    match: ['walking', '\bwalk\b', 'cycling', 'bicycl', '\bbike\b', 'pedestrian']
+    evidence:
+      Ola Maps:
+        - {statement: "Directions mode accepts driving, walking, bike or auto.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Travel mode - driving, walking, bike, or auto"}
+      Google Maps Platform:
+        - {statement: "Directions supports walking and bicycling modes (where path data is available).",
+           url: "https://developers.google.com/maps/documentation/directions/get-directions",
+           quote: "walking requests walking directions or distance via pedestrian paths"}
+      Mapbox:
+        - {statement: "Directions has mapbox/walking and mapbox/cycling profiles.",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "Possible values are mapbox/driving-traffic , mapbox/driving , mapbox/walking , or mapbox/cycling"}
+      OSRM:
+        - {statement: "The public demo server runs car, foot and bike profiles (self-host for production).",
+           url: "https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server",
+           quote: "running worldwide car, foot and bike profiles"}
+
+  - id: autocomplete_country_restriction
+    label: "Restricting autocomplete / search results to a country"
+    match: ['restrict', 'limit (results )?to', 'filter', 'country', 'india only', 'only (in )?india']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Place Autocomplete can filter results to places within a specified country with includedRegionCodes.",
+           url: "https://developers.google.com/maps/documentation/places/web-service/legacy/autocomplete",
+           quote: "You can use the includedRegionCodes parameter to filter results to show only those places within a specified country"}
+      Mapbox:
+        - {statement: "Geocoding accepts a country parameter (ISO 3166 alpha-2 codes, comma separated).",
+           url: "https://docs.mapbox.com/api/search/geocoding/",
+           quote: "Permitted values are ISO 3166 alpha 2 country codes separated by commas"}
+      HERE:
+        - {statement: "Autocomplete can limit results to a country with in=countryCode:XXX.",
+           url: "https://docs.here.com/geocoding-and-search/docs/code-autocomplete-country-filter",
+           quote: "can limit the results to Germany by specifying the parameter in=countryCode:DEU"}
+      OSM Nominatim:
+        - {statement: "Search accepts countrycodes to limit results to one or more countries (not for client-side type-ahead on the public server).",
+           url: "https://nominatim.org/release-docs/latest/api/Search/",
+           quote: "Filter that limits the search results to one or more countries"}
+
+  - id: response_language
+    label: "Response / instruction language (including Indian languages)"
+    match: ['hindi', 'tamil', 'kannada', 'marathi', 'bengali', 'telugu', 'malayalam', 'gujarati', 'language', 'multilingual', 'vernacular', 'local language']
+    evidence:
+      Ola Maps:
+        - {statement: "The language parameter supports Bengali, English, Gujarati, Hindi, Kannada, Malayalam, Marathi, Oriya, Sanskrit, Tamil, Telugu and Urdu.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Response language - bn (Bengali), en (English), gu (Gujarati), hi (Hindi), kn (Kannada), ml (Malayalam), mr (Marathi)"}
+      Mapbox:
+        - {statement: "Directions has a language parameter for the turn-by-turn text instructions (default en).",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "The language of returned turn-by-turn text instructions"}
+      Google Maps Platform:
+        - {statement: "Directions and Distance Matrix have a language parameter for returned results (see the supported-languages list).",
+           url: "https://developers.google.com/maps/documentation/distance-matrix/distance-matrix",
+           quote: "The language in which to return results"}
+
+  - id: matrix_size
+    label: "Distance matrix size per request"
+    match: ['matrix', 'many[- ]to[- ]many', 'origins', 'destinations', '\d+\s*[x×]\s*\d+']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Distance Matrix (Legacy): max 25 origins or 25 destinations and 100 elements per server-side request.",
+           url: "https://developers.google.com/maps/documentation/distance-matrix/usage-and-billing",
+           quote: "Maximum of 25 origins or 25 destinations per request"}
+      Ola Maps:
+        - {statement: "Distance Matrix: x origins times y destinations may not exceed 50 pairs per request.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "with a maximum of 50 pairs per request"}
+      Mapbox:
+        - {statement: "Matrix: up to 625 elements per request (25 sources x 25 destinations).",
+           url: "https://docs.mapbox.com/api/navigation/matrix/",
+           quote: "The maximum number of elements per request is 625"}
+      HERE:
+        - {statement: "Matrix Routing: up to 10,000 origins and 10,000 destinations; with custom options and dynamic traffic, up to 15 origins and 100 destinations or 100 origins and one destination.",
+           url: "https://docs.here.com/routing/docs/matrix-v8-intro",
+           quote: "up to 15 origins and 100 destinations or up to 100 origins and one (1) destination"}
+
+  - id: waypoint_capacity
+    label: "Waypoints / stops per route request"
+    match: ['waypoints?', '\bstops\b', 'multi[- ]?stop', '\d+\s*stops']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Directions allows up to 25 waypoints per request (more than 10 intermediates is billed at the higher Advanced rate).",
+           url: "https://developers.google.com/maps/documentation/directions/usage-and-billing",
+           quote: "a maximum of 25 waypoints per request"}
+      Ola Maps:
+        - {statement: "Directions accepts up to 25 waypoints (Directions Basic up to 10).",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Optional waypoints joined by '|' separator in lat,lng format. Up to 25 waypoints"}
+      Mapbox:
+        - {statement: "Directions accepts up to 25 coordinates for driving, driving-traffic, walking and cycling.",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "Requests using this profile accept up to 25 coordinates"}
+
+  - id: self_hosting
+    label: "Self-hosting / open-source option"
+    match: ['self[- ]?host', 'on[- ]?prem', 'own server', 'run it ourselves', 'open[- ]?source', 'licen[cs]e']
+    evidence:
+      OSRM:
+        - {statement: "OSRM is open source and can be run as the osrm-routed HTTP server or used as the libosrm C++ library.",
+           url: "https://project-osrm.org/docs/v5.24.0/api/",
+           quote: "OSRM can be used as a library (libosrm) via C++ instead of using it through the HTTP interface and osrm-routed"}
+      OSM Nominatim:
+        - {statement: "For larger needs than the public server allows, you can install your own Nominatim instance.",
+           url: "https://operations.osmfoundation.org/policies/nominatim/",
+           quote: "If your requirements are even larger you can install your own instance of Nominatim"}
+
+  - id: regional_boundaries
+    label: "Regional / political boundary handling (for example Indian borders)"
+    match: ['boundar', 'border', 'worldview', 'disputed', 'indian law', 'map of india']
+    evidence:
+      Mapbox:
+        - {statement: "Geocoding has a worldview parameter that returns features as defined by different regional audiences (including 'in').",
+           url: "https://docs.mapbox.com/api/search/geocoding/",
+           quote: "Returns features that are defined differently by audiences that belong to various regional, cultural, or political groups"}

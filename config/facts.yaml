@@ -1,0 +1,109 @@
+# Small, auditable facts for rules that retrieval keeps missing. Each fact is written from a vendor page and carries a
+# VERBATIM quote; tests/test_facts.py fails if a quote is not found in the fetched page, so a fact cannot drift from its source.
+# Keep facts narrow. They are injected into the prompt only when a trigger matches the question, and their source chunk is
+# added to the cited sources. Log every addition in BACKLOG.md; this is a targeted patch, not a retrieval improvement.
+# `any`: regexes (case-insensitive); the fact fires if any matches.   `unverified`: a line stating what is NOT in the sources.
+facts:
+  - id: gcp-session-same-project
+    any: ['(autocomplete|place details|session).{0,100}(two|different|separate|multiple).{0,30}(gcp |google cloud |cloud console )?projects?',
+          '(two|different|separate|multiple).{0,30}(gcp |google cloud )?projects?.{0,100}(autocomplete|place details|session)']
+    text: "Yes, it matters. For Google Place Autocomplete and Place Details, the API key(s) used for every request within one session must belong to the same Google Cloud Console project, so keys from two different projects in one session are not allowed."
+    sources:
+      - url: https://developers.google.com/maps/documentation/places/web-service/legacy/autocomplete
+        quote: "The API key(s) used for each request within a session must belong to the same Google Cloud Console project"
+
+  - id: ola-grace-period
+    any: ['\bola\b.{0,120}(prepaid|credit).{0,80}(zero|ran out|run out|exhaust|empty|negative|balance)',
+          '(prepaid|credit).{0,80}(zero|ran out|run out|exhaust|empty|negative|balance).{0,120}\bola\b',
+          'grace period']
+    text: "Ola Maps prepaid credits: if the balance reaches zero on or before 8 September 2026, Directions does NOT stop, because during the grace period (which ends 8 September 2026) the credit balance may become negative without service interruption. Add credits before 8 September 2026 and keep a sufficient balance for expected usage beyond the free tier; only after the grace period does a zero balance matter once usage is beyond the free allowance."
+    sources:
+      - url: https://maps.olakrutrim.com/pricing/update-2026
+        quote: "Your credit balance may become negative without service interruption during the grace period"
+      - url: https://maps.olakrutrim.com/pricing/update-2026
+        quote: "Grace period ends 8 September 2026"
+
+  - id: google-reverse-geocode-result-type
+    any: ['result_type', 'location_type', 'ZERO_RESULTS.{0,80}(reverse|geocod)', '(reverse|geocod).{0,80}ZERO_RESULTS',
+          '(only|just) the (locality|city|postal|street)']
+    text: "In Google reverse geocoding, result_type is a filter on address types (for example result_type=locality returns only locality results). If none of the filter values match, the API returns ZERO_RESULTS, so for rural points widen or drop the filter. REQUEST_DENIED can occur when result_type or location_type is sent without an API key."
+    sources:
+      - url: https://developers.google.com/maps/documentation/geocoding/requests-reverse-geocoding
+        quote: "If none of the filter values are acceptable, the API returns ZERO_RESULTS"
+      - url: https://developers.google.com/maps/documentation/geocoding/requests-reverse-geocoding
+        quote: "Possibly because the request includes a result_type or location_type parameter but does not include an API key"
+
+  - id: google-autocomplete-types-max-five
+    any: ['types=\S+\|\S+\|\S+\|\S+\|\S+\|\S+', 'INVALID_REQUEST.{0,80}\btypes\b', '\btypes\b.{0,80}INVALID_REQUEST']
+    text: "In Google Place Autocomplete (Legacy) the types parameter accepts up to five values from Table 1 or Table 2 (separated by |), or a single filter from Table 3. Sending more than five values, unrecognised values, or mixing tables returns INVALID_REQUEST, so a request with six types is invalid: remove one."
+    sources:
+      - url: https://developers.google.com/maps/documentation/places/web-service/legacy/autocomplete
+        quote: "Up to five values from Table 1 or Table 2"
+
+  - id: google-units-text-only
+    any: ['\bunits\b.{0,60}(metric|imperial|miles?|km)', '\b\d+(\.\d+)? mi\b', '(miles|\bmi\b).{0,60}(india|indian|metric)',
+          'distance values? in (miles|meters|metres)']
+    text: "In Google Directions and Distance Matrix, the units setting (metric or imperial) only affects the text shown in distance fields. The numeric distance value is always in meters. Set units=metric for kilometre text and use the numeric value for logic."
+    sources:
+      - url: https://developers.google.com/maps/documentation/directions/get-directions
+        quote: "this unit system setting only affects the text displayed within distance fields. The distance fields also contain values which are always expressed in meters"
+
+  - id: google-directions-legacy-new-projects
+    any: ['(new|brand-new|fresh).{0,40}(gcp|google cloud|cloud project|project).{0,100}directions',
+          'directions api.{0,80}(can.?t|cannot|not|unable).{0,30}enabl', '(can.?t|cannot|unable to).{0,20}enable.{0,40}directions']
+    text: "As of October 2026, Google Directions API (Legacy) can no longer be enabled for new Google Cloud projects; existing projects remain fully supported. New projects should use the Routes API (Compute Routes)."
+    sources:
+      - url: https://developers.google.com/maps/documentation/directions/get-directions
+        quote: "As of October 2026, Directions API (Legacy) can no longer be enabled for new Google Cloud projects. Existing projects remain fully supported"
+
+  - id: google-distance-matrix-legacy-new-projects
+    any: ['(new|brand-new|fresh).{0,40}(gcp|google cloud|cloud project|project).{0,100}distance matrix',
+          'distance matrix.{0,80}(can.?t|cannot|not|unable).{0,30}enabl', '(can.?t|cannot|unable to).{0,20}enable.{0,40}distance matrix']
+    text: "As of October 2026, Google Distance Matrix API (Legacy) can no longer be enabled for new Google Cloud projects; existing projects remain fully supported. New projects should use the Routes API (Compute Route Matrix)."
+    sources:
+      - url: https://developers.google.com/maps/documentation/distance-matrix/distance-matrix
+        quote: "Distance Matrix API (Legacy) can no longer be enabled for new Google Cloud projects"
+
+  - id: nominatim-no-client-autocomplete
+    any: ['nominatim.{0,100}(type-?ahead|auto-?complete)', '(type-?ahead|auto-?complete).{0,100}nominatim']
+    text: "No. The public Nominatim usage policy forbids auto-complete search implemented on the client side using the API, and allows an absolute maximum of 1 request per second. For type-ahead, self-host Nominatim or use a commercial autocomplete API."
+    sources:
+      - url: https://operations.osmfoundation.org/policies/nominatim/
+        quote: "you must not implement such a service on the client side using the API"
+
+  - id: google-location-modifiers-billing
+    any: ['side_of_road', '\bheading\b.{0,20}(param|modif)', 'location modifier',
+          'bill.{0,40}(doubled|jump|spike|higher|increas).{0,80}(distance matrix|directions)']
+    text: "In Google Distance Matrix, requests that use location modifiers (such as side_of_road or heading) are billed at a higher rate: the Advanced tier. In Directions, the Advanced SKU applies to traffic information, more than 10 waypoints, waypoint optimization, or location modifiers."
+    sources:
+      - url: https://developers.google.com/maps/documentation/distance-matrix/distance-matrix
+        quote: "Requests using location modifiers are billed at a higher rate"
+      - url: https://developers.google.com/maps/documentation/directions/usage-and-billing
+        quote: "Advanced SKU applies to requests using traffic information, more than 10 waypoints, waypoint optimization, or location modifiers"
+
+  - id: google-place-ids-cacheable
+    any: ['(cache|store|save|keep).{0,50}place ?ids?', 'place ?ids?.{0,50}(cache|store|save)']
+    text: "Yes. Google exempts place IDs from its caching restrictions, so place ID values can be stored indefinitely. Other Places content follows the service-specific terms."
+    sources:
+      - url: https://developers.google.com/maps/documentation/geocoding/policies
+        quote: "is exempt from the caching restrictions"
+
+  - id: ola-rate-limit-429
+    any: ['\bola\b.{0,80}\b429\b', '\b429\b.{0,80}\bola\b']
+    text: "Ola Maps returns 429 'Reached monthly/minute rate limits' when the rate limit is exceeded. Its documented guidance is to try again later or contact maps-support@olakrutrim.com for a free upgrade or custom plan."
+    sources:
+      - url: https://maps.olakrutrim.com/docs
+        quote: "you will receive a 429 Reached monthly/minute rate limits. Try again later or contact maps-support@olakrutrim.com for a free upgrade"
+
+  - id: walking-cycling-support
+    any: ['(walking|cycling|bicycl|bike|pedestrian).{0,80}(providers?|apis?|support|all)', '(providers?|apis?|all).{0,60}(walking|cycling|bicycl)']
+    text: "Walking and cycling directions per provider (from the fetched sources): Ola Maps Directions mode accepts driving, walking, bike or auto. Google Directions supports walking and bicycling modes (where path data is available). Mapbox has mapbox/walking and mapbox/cycling profiles. The OSRM public demo server runs car, foot and bike profiles (self-host for production). HERE: walking/cycling support for India is not verified in the fetched sources, so check HERE."
+    sources:
+      - url: https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml
+        quote: "Travel mode - driving, walking, bike, or auto"
+      - url: https://developers.google.com/maps/documentation/directions/get-directions
+        quote: "walking requests walking directions or distance via pedestrian paths"
+      - url: https://docs.mapbox.com/api/navigation/directions/
+        quote: "Possible values are mapbox/driving-traffic , mapbox/driving , mapbox/walking , or mapbox/cycling"
+      - url: https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server
+        quote: "running worldwide car, foot and bike profiles"

@@ -1,0 +1,8 @@
+# Who may approve what. Exactly ONE approval is always enough (single-approver rule); nobody can approve their own agent's work
+# unless they are listed here as a human, and the agent itself can never approve anything.
+# To add an approver, add a line under `approvers`. `can_approve: all` or a list of action types
+# (escalation | tracker_update | handoff | external_send | owner_action | other).
+required_approvals: 1
+approvers:
+  - name: deepshikha
+    can_approve: all
