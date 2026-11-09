@@ -1,4 +1,4 @@
-﻿"""Persistence helpers. Consequential actions are only ever *proposed* here; one authorised human decides (see store/cases.py).
+"""Persistence helpers. Consequential actions are only ever *proposed* here; one authorised human decides (see store/cases.py).
 
 The approval functions below keep their original names (used by the API, UI and tests) and delegate to cases.py, which enforces the
 rules: authorised approver only, rejection needs a reason, a decision is final, an approved action is applied at most once.
@@ -15,11 +15,22 @@ def _now() -> str:
 
 
 def save_trace(con, *, trace_id: str, query: str, a: dict, model: str) -> None:
-    con.execute("INSERT OR REPLACE INTO traces (id, ts, query, retrieved_json, tool_calls_json, model, abstained, escalate, answer) "
-                "VALUES (?,?,?,?,?,?,?,?,?)",
+    con.execute("INSERT OR REPLACE INTO traces (id, ts, query, retrieved_json, tool_calls_json, model, abstained, escalate, answer, "
+                "reason, case_id, citations_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                 (trace_id, _now(), query, json.dumps(a.get("retrieved", [])), json.dumps(a.get("tool_calls", []), default=str),
-                 model, int(a["abstained"]), int(a["escalate"]), a["text"]))
+                 model, int(a["abstained"]), int(a["escalate"]), a["text"], a.get("reason"), a.get("case_id"),
+                 json.dumps(a.get("citations", []), default=str)))
     con.commit()
+
+
+def set_trace_model_calls(trace_id: str, n: int) -> None:
+    """The measured number of model requests is only known after the answer is complete, so it is written afterwards."""
+    con = connect()
+    try:
+        con.execute("UPDATE traces SET model_calls=? WHERE id=?", (n, trace_id))
+        con.commit()
+    finally:
+        con.close()
 
 
 def create_proposed_action(con, *, type: str, payload: dict, case_id: str | None = None, requested_by: str = "agent") -> int:

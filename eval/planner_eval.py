@@ -23,11 +23,47 @@ SUPPORT = {"error_resolution", "parameter_troubleshooting", "production_incident
            "security_incident", "coverage_error", "data_quality", "accuracy_regression", "performance_question"}
 
 
+def coverage(path: str, with_model: bool, show: bool) -> None:
+    """A5: how often do the rules miss real messages? Run on the TESTER messages, never tune on the development split.
+    Reports rules-only accuracy, the 'unclear' rate, and (with --fallback) what the model fallback fixes and what it breaks."""
+    import csv
+    rows = list(csv.DictReader(open(path, encoding="utf-8-sig")))
+    n = len(rows)
+    rules_ok = unclear = fb_fixed = fb_broke = fb_tried = 0
+    misses = []
+    for r in rows:
+        msg, exp = r["message"], (r.get("expected_workflow") or "").strip().lower()
+        rp = plan(msg, model_fallback=False)
+        got = rp["workflow"]
+        rules_ok += got == exp
+        unclear += got == "unclear"
+        final = got
+        if with_model and got == "unclear":
+            fb_tried += 1
+            final = plan(msg, model_fallback=True)["workflow"]
+            fb_fixed += final == exp and got != exp
+            fb_broke += got == exp and final != exp
+        if final != exp:
+            misses.append((exp, got, final, msg[:100]))
+    print(f"tester messages: {n}")
+    print(f"rules only: {rules_ok}/{n} = {rules_ok / n:.1%} correct; 'unclear' {unclear}/{n} = {unclear / n:.1%}")
+    if with_model:
+        print(f"model fallback tried on {fb_tried}: fixed {fb_fixed}, broke {fb_broke}; with fallback {(rules_ok + fb_fixed - fb_broke) / n:.1%} correct")
+        print("Keep the fallback ON only if it fixes clearly more than it breaks AND the unclear rate above justifies the extra model call.")
+    if show:
+        for m in misses[:30]:
+            print("MISS (expected, rules, final):", m)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", default="eval")
     ap.add_argument("--show", action="store_true")
+    ap.add_argument("--messages", help="CSV of TESTER messages (columns: message, expected_workflow = sales|support|unclear) to measure rule coverage")
+    ap.add_argument("--fallback", action="store_true", help="with --messages: also try the model fallback on messages the rules leave 'unclear' (uses the gateway)")
     a = ap.parse_args()
+    if a.messages:
+        return coverage(a.messages, a.fallback, a.show)
     items = load_items(None if a.split == "all" else a.split)
     ok = tot = 0
     conf: collections.Counter = collections.Counter()

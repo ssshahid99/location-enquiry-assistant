@@ -14,11 +14,20 @@ from lbs_rag.agent import orchestrator  # noqa: E402
 from lbs_rag.generate import meta  # noqa: E402
 from lbs_rag.generate.answer import answer  # noqa: E402
 from lbs_rag.safety.pii import redact_with_report  # noqa: E402
-from lbs_rag.store import cases, handlers  # noqa: E402
+from lbs_rag.store import cases, customers, handlers, review, traces  # noqa: E402
 from lbs_rag.store import repositories as repo  # noqa: E402
 
 st.set_page_config(page_title="Location Services Copilot", layout="wide")
 st.title("Location Services Sales & Support Copilot")
+
+try:
+    from lbs_rag.ingest.freshness import snapshot_info
+    _snap = snapshot_info()
+    if _snap["age_days"] is not None:
+        _txt = f"Documentation snapshot: pages fetched {_snap['oldest']} to {_snap['newest']} (oldest is {_snap['age_days']} days old)."
+        (st.warning if _snap["stale"] else st.caption)(_txt + (" Prices and limits may have changed: refresh the snapshot." if _snap["stale"] else ""))
+except Exception:  # noqa: BLE001 - never block the app on this banner
+    pass
 
 st.sidebar.header("What can I ask?")
 st.sidebar.caption("Click an example to fill the question box, or type 'what can you do?'.")
@@ -27,7 +36,35 @@ for _ex in meta.EXAMPLES:
         st.session_state["q"] = _ex
         st.session_state["case_msg"] = _ex
 
-ask_tab, cases_tab, approve_tab = st.tabs(["Ask", "Cases", "Approvals"])
+ask_tab, cases_tab, approve_tab, trace_tab = st.tabs(["Ask", "Cases", "Approvals", "Traces"])
+
+
+def show_trace(con, trace_id: str):
+    """Steps and sources behind one answer: what was asked, which passages the model saw (cited ones marked), tool results, steps."""
+    t = traces.get_trace(con, trace_id)
+    if t is None:
+        st.warning("Trace not found.")
+        return
+    st.write(f"Trace `{t['id']}` | {t.get('ts', '')} | reason: {t.get('reason') or '-'} | model calls: "
+             f"{t['model_calls'] if t.get('model_calls') is not None else 'not recorded'}")
+    if t.get("query"):
+        st.markdown(f"**Question:** {t['query']}")
+        st.markdown(f"**Answer:** {t['answer']}")
+    if t["passages"]:
+        st.markdown("**Passages the model was shown** (cited ones are marked)")
+        for p in t["passages"]:
+            with st.expander(f"{'CITED ' if p['cited'] else ''}#{p['rank']} {p['provider'] or ''} - {p['section'] or ''}"):
+                st.markdown(f"[{p['doc_url']}]({p['doc_url']})")
+                st.text(p["snippet"])
+    for tc in t["tool_calls"]:
+        with st.expander(f"Tool: {tc.get('tool')}"):
+            st.json(tc, expanded=False)
+    if t["steps"]:
+        st.markdown("**Execution steps**")
+        for s in t["steps"]:
+            st.write(f"{s['component']} / {s['step']} ({s['ms'] or 0} ms)")
+    if t.get("case_id"):
+        st.caption(f"Belongs to case {t['case_id']}")
 
 ROUTE_LABEL = {"rag": "Answered directly from documentation", "agent": "Handled as a case by the agent (Planner, Executor, Critic)",
                "human": "Needs a person: case and handoff prepared", "refused": "Not processed (scope or safety rule)"}
@@ -60,8 +97,12 @@ with ask_tab:
             st.info(f"The system declined to state some or all facts ({a['reason'] or 'insufficient verified sources'}).")
         st.markdown(a["text"])
         show_sources(a["citations"])
-        with st.expander("Trace"):
-            st.json({k: a[k] for k in ("trace_id", "abstained", "escalate", "reason", "tool_calls")}, expanded=False)
+        with st.expander("Trace (steps and sources)"):
+            _c = repo.connect()
+            try:
+                show_trace(_c, a["trace_id"])
+            finally:
+                _c.close()
 
 # ------------------------------------------------------------------------------------------------ Cases
 with cases_tab:
@@ -141,13 +182,78 @@ with cases_tab:
             pick = labels[st.selectbox("Case", list(labels))]
             c = cases.get_case(con, pick)
             st.write(f"Status **{c['status']}** | owner {c['owner'] or 'unassigned'} | next action: {c['next_action'] or 'not set'}")
-            t1, t2, t3, t4, t5 = st.tabs(["Conversation", "Known facts and tracker", "Timeline", "Reply / handoff", "Close / reopen"])
+            rv = review.review_case(con, pick)
+            t7, t1, t2, t3, t4, t5, t6 = st.tabs([f"Review all ({rv['count']})", "Conversation", "Known facts and tracker", "Timeline",
+                                                  "Reply / handoff", "Close / reopen", "Trace"])
+            with t7:
+                if not rv["items"]:
+                    st.write("Nothing is waiting for approval on this case.")
+                else:
+                    st.caption("Every request is still decided and recorded on its own; this screen only saves the clicking. Nothing is sent externally, "
+                               "and nothing is approved unless you tick it.")
+                    if rv["stale_count"]:
+                        st.warning(f"{rv['stale_count']} request(s) are stale: the customer wrote again after they were prepared.")
+                    picks = {}
+                    for it in rv["items"]:
+                        with st.container(border=True):
+                            st.markdown(f"**#{it['id']} {it['type']}**" + ("  :red[STALE]" if it["stale"] else ""))
+                            for w in it["warnings"]:
+                                st.write(f"- :orange[{w}]")
+                            pl = it["payload"]
+                            st.write(pl.get("draft") or pl.get("draft_reply") or pl.get("text") or pl.get("changes") or
+                                     {k: pl[k] for k in ("owner_role", "next_action", "urgency", "category", "owner") if k in pl})
+                            choice = st.radio("Decision", ["leave pending", "approve", "reject"], horizontal=True, key=f"rv{it['id']}")
+                            ack = st.checkbox("I have re-checked this stale request", key=f"rvack{it['id']}") if it["stale"] else False
+                            picks[it["id"]] = (choice, ack)
+                    who_r = st.selectbox("Approver", cases.approver_names(), key=f"rvwho{pick}")
+                    note_r = st.text_input("Note (required for every rejection)", key=f"rvnote{pick}")
+                    if st.button("Apply my decisions", type="primary", key=f"rvgo{pick}"):
+                        decs = [{"action_id": i, "approve": ch == "approve", "acknowledge_stale": ack, "note": note_r or None}
+                                for i, (ch, ack) in picks.items() if ch != "leave pending"]
+                        if not decs:
+                            st.info("Nothing selected.")
+                        else:
+                            try:
+                                res = review.decide_bundle(con, pick, decs, approver=who_r)
+                                for r in res["results"]:
+                                    (st.success if r["ok"] else st.error)(f"#{r['action_id']} {r['type']}: " + (r["status"] if r["ok"] else r["error"]))
+                                if not res["failed"]:
+                                    st.rerun()
+                            except ValueError as e:
+                                st.error(str(e))
+            with t6:
+                ct = traces.case_trace(con, pick)
+                if not ct["steps"]:
+                    st.write("No recorded steps for this case.")
+                for tid, steps in ct["by_message"].items():
+                    with st.expander(f"Message {tid}: " + " > ".join(f"{s['component']}/{s['step']}" for s in steps)):
+                        show_trace(con, tid)
+                st.caption(f"Total step time {ct['total_step_ms']} ms | {len(ct['approvals'])} approval request(s)")
             with t1:
                 for m in cases.get_case_history(con, pick, limit=100):
                     st.markdown(f"**{m['role']}** ({m['ts']}): {m['content']}")
             with t2:
                 st.write("Known facts (working memory):", cases.known_facts(con, pick))
                 st.write("Approved tracker:", cases.get_tracker(con, pick) or "nothing approved yet")
+                hist = customers.summary(con, pick)
+                if hist["earlier_cases"]:
+                    st.markdown("**Earlier cases of this customer**")
+                    for ec in hist["earlier_cases"]:
+                        st.write(f"- `{ec['id']}` {ec['created_at'][:10]} | {ec['status']} | {ec['category'] or ec['workflow']} | {ec['next_action'] or ''}")
+                if hist["unconfirmed_facts"]:
+                    st.markdown("**From earlier cases, NOT yet confirmed** (not used until you confirm that they still apply)")
+                    who_f = st.selectbox("Confirmed by", cases.approver_names(), key=f"pfwho{pick}")
+                    for pf in hist["unconfirmed_facts"]:
+                        with st.container(border=True):
+                            st.write(f"**{pf['key']}**: {pf['value']}  \n<small>said on case {pf['from_case']}, {pf['from_date'][:10]}</small>", unsafe_allow_html=True)
+                            newv = st.text_input("Corrected value (leave as is if still true)", value=pf["value"], key=f"pfv{pick}{pf['key']}")
+                            b1, b2 = st.columns(2)
+                            if b1.button("Still true", key=f"pfok{pick}{pf['key']}"):
+                                customers.confirm_prior_fact(con, pick, pf["key"], who_f, value=newv)
+                                st.rerun()
+                            if b2.button("No longer applies", key=f"pfno{pick}{pf['key']}"):
+                                customers.dismiss_prior_fact(con, pick, pf["key"], who_f)
+                                st.rerun()
             with t3:
                 for ev in cases.case_timeline(con, pick):
                     st.write(f"{ev['ts']} - {ev['actor']} - {ev['event']}")
@@ -248,5 +354,22 @@ with approve_tab:
                     with st.expander("Case timeline"):
                         for ev in repo.cases.case_timeline(con, p["case_id"]):
                             st.write(f"{ev['ts']} - {ev['actor']} - {ev['event']}")
+    finally:
+        con.close()
+
+# ------------------------------------------------------------------------------------------------ Traces
+with trace_tab:
+    st.caption("Review any answer: the question, the passages the model was shown (cited ones marked), tool results and steps. Read-only.")
+    f1, f2 = st.columns(2)
+    only = f1.selectbox("Show", ["all"] + list(traces.FILTERS), key="tr_only")
+    needle = f2.text_input("Question contains", key="tr_q")
+    con = repo.connect()
+    try:
+        rows = traces.list_traces(con, only=None if only == "all" else only, query_contains=needle or None, limit=100)
+        if not rows:
+            st.write("No traces yet.")
+        else:
+            labels = {f"{r['ts'][:19]} | {r['reason'] or 'answered'} | {r['query'][:70]}": r["id"] for r in rows}
+            show_trace(con, labels[st.selectbox("Trace", list(labels), key="tr_pick")])
     finally:
         con.close()

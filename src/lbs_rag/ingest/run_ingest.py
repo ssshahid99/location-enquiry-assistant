@@ -15,6 +15,18 @@ from .parse_stackoverflow import parse_stackoverflow
 ROOT = Path(__file__).resolve().parents[3]
 
 
+def parse_source(s: dict, text: str):
+    """Parse one fetched source -> (title, sections, effective_date). Shared by the full ingest and the freshness tooling."""
+    if s["kind"] == "stackoverflow":
+        title, sections, extra = parse_stackoverflow(json.loads(text))
+        return title, sections, extra["effective_date"]
+    if s["kind"] == "openapi":
+        title, sections = parse_openapi(text)
+        return title, sections, None
+    title, sections = parse_html(text)
+    return title, sections, None
+
+
 def main(day: str | None = None) -> None:
     raw_root = ROOT / "data" / "raw"
     day = day or sorted(p.name for p in raw_root.iterdir() if p.is_dir())[-1]
@@ -35,14 +47,7 @@ def main(day: str | None = None) -> None:
             problems.append((url, "missing snapshot")); continue
         meta = {**s, "fetched_at": fetched.get(url, day), "effective_date": None}
         try:
-            text = path.read_text(encoding="utf-8")
-            if s["kind"] == "stackoverflow":
-                title, sections, extra = parse_stackoverflow(json.loads(text))
-                meta["effective_date"] = extra["effective_date"]
-            elif s["kind"] == "openapi":
-                title, sections = parse_openapi(text)
-            else:
-                title, sections = parse_html(text)
+            title, sections, meta["effective_date"] = parse_source(s, path.read_text(encoding="utf-8"))
             ch = chunk_document(meta, title or url, sections)
         except Exception as e:  # noqa: BLE001
             problems.append((url, f"{type(e).__name__}: {e}")); continue

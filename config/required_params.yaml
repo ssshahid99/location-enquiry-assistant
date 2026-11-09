@@ -1,0 +1,56 @@
+# Documented REQUIRED parameters per provider and API (checklist A6). Ola's list is read from its OpenAPI spec (code); the entries below are
+# for providers whose fetched pages state the required parameters in words or tables. Every parameter carries a VERBATIM quote that
+# tests/test_required_params.py checks against the fetched page. Where a provider's page does not state a required list in the fetched
+# text (for example Google Directions / Distance Matrix), there is NO entry: the Executor then says "no verified list" instead of guessing.
+# names:   how the parameter appears in a request (any one satisfies it)
+# seen_if: regex on the customer's message for parameters that are not key=value (path segments, coordinate lists)
+# `key` / `access_token` / `api_key` are never reported missing: secrets are removed from messages before the Executor sees them.
+# `when`:  regex that must match the message for this entry to apply (reverse vs forward geocoding share one API name).
+entries:
+  - provider: Mapbox
+    api: Directions
+    url: "https://docs.mapbox.com/api/navigation/directions/"
+    params:
+      - {names: [profile], seen_if: 'mapbox/(driving-traffic|driving|walking|cycling)', quote: "The routing profile to use."}
+      - {names: [coordinates], seen_if: '-?\d+\.\d+,-?\d+\.\d+;-?\d+\.\d+,-?\d+\.\d+', quote: "A semicolon-separated list of between two and 25 {longitude},{latitude} coordinate pairs to visit in order."}
+      - {names: [access_token], quote: "A valid Mapbox access token"}
+
+  - provider: Mapbox
+    api: Distance Matrix
+    url: "https://docs.mapbox.com/api/navigation/matrix/"
+    params:
+      - {names: [profile], seen_if: 'mapbox/(driving-traffic|driving|walking|cycling)', quote: "A Mapbox Directions routing profile ID."}
+      - {names: [access_token], quote: "A valid Mapbox access token"}
+
+  - provider: Mapbox
+    api: Reverse Geocode
+    when: 'reverse'
+    url: "https://docs.mapbox.com/api/search/geocoding/"
+    params:
+      - {names: [longitude], quote: "The longitude decimal value from the geographic coordinate for the location being queried."}
+      - {names: [latitude], quote: "The latitude decimal value from the geographic coordinate for the location being queried."}
+      - {names: [access_token], quote: "A valid Mapbox access token"}
+
+  - provider: Mapbox
+    api: Autocomplete
+    url: "https://docs.mapbox.com/api/search/search-box/"
+    params:
+      - {names: [q], quote: "The user's query string. The query is limited to 256 characters."}
+      - {names: [session_token], quote: "A customer-provided session token value, which groups a series of requests together for billing purposes"}
+      - {names: [access_token], quote: "A valid Mapbox access token"}
+
+  - provider: Google Maps Platform
+    api: Reverse Geocode
+    when: 'reverse'
+    url: "https://developers.google.com/maps/documentation/geocoding/requests-reverse-geocoding"
+    params:
+      - {names: [latlng], quote: "The latitude and longitude coordinates specifying the location for which you want the closest, human-readable address."}
+      - {names: [key], quote: "Your application's API key."}
+
+  - provider: HERE
+    api: Distance Matrix
+    url: "https://docs.here.com/routing/docs/matrix-v8-intro"
+    params:
+      - {names: [origins], quote: "A list of origins and destinations, specified using geographic coordinates."}
+      - {names: [destinations], quote: "A list of origins and destinations, specified using geographic coordinates."}
+      - {names: [regionDefinition, profile], quote: "A geographical region which contains the coordinates and inside of which the routes will"}

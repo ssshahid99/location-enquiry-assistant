@@ -68,3 +68,9 @@ escalation:
     billing_incident: [timestamp]
     contract_request: [volume]
     data_quality: [coordinates, timestamp]
+
+# Model-assisted fallback (A5): when the rules find NO workflow, one model call may pick a workflow and category from the fixed lists
+# (validated by code; it never extracts facts, triggers escalations or creates approvals). OFF until the tester messages show the rules
+# missing real cases; measure with `python eval/planner_eval.py --fallback` on the tester messages first.
+model_fallback:
+  enabled: false

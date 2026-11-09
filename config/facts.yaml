@@ -107,3 +107,11 @@ facts:
         quote: "Possible values are mapbox/driving-traffic , mapbox/driving , mapbox/walking , or mapbox/cycling"
       - url: https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server
         quote: "running worldwide car, foot and bike profiles"
+
+  - id: google-reverse-geocode-which-result
+    any: ['\bgoogle\b.{0,80}reverse[- ]?geocod\w*.{0,100}\b(which|what|display|show|pick|choose|use)\b.{0,40}\bresults?\b',
+          '\bwhich\b.{0,30}\bgoogle\b.{0,40}reverse[- ]?geocod\w* result']
+    text: "Google reverse geocoding returns several results, from the most specific street address down to less specific political entities (neighbourhoods, cities, counties, states). To choose which one to display, filter by type with result_type (and location_type), or pick the level your screen needs. The fetched documentation does not state that results[0] is always the most specific, so do not rely on array order without checking the vendor reference."
+    sources:
+      - url: https://developers.google.com/maps/documentation/geocoding/requests-reverse-geocoding
+        quote: "This API returns different types of addresses, from the most specific street address to less specific political entities such as neighborhoods, cities, counties, and states."

@@ -152,7 +152,7 @@ def extract_facts(message: str) -> dict[str, str]:
             m = rx.search(message)
             if m:
                 facts[key] = m.group(0).strip()
-            elif has_volume(message):
+            elif has_volume(re.sub(r"(?<![\d,.])[45]\d{2}(?![\d,.])", " ", message)):    # an HTTP status ("returns 500") is not a volume
                 facts[key] = "volume stated"
             continue
         m = rx.search(message)
@@ -174,12 +174,31 @@ def _checklist(workflow: str, category: str | None) -> list[dict]:
     return [i for i in items if not i.get("categories") or category in i["categories"]]
 
 
+def _apply_model_fallback(message: str, cls: dict, steps: list[dict], client=None) -> dict:
+    """Only when the rules found no workflow: ask the model for one validated label (A5). Everything else stays rules/code."""
+    from . import planner_fallback as fb
+    label = fb.suggest(message, client=client)
+    steps.append({"step": "model_fallback", "output": label or {"result": "ignored (no valid, confident label)"}})
+    if not label:
+        return cls
+    wf, cat = label["workflow"], label["category"]
+    low = cat in ("how_to", "pricing", "capability_match", "competitive")
+    urgency = "high" if _HIGH_URGENCY.search(message) and wf == "support" else ("low" if low else "normal")
+    return {**cls, "workflow": wf, "category": cat, "urgency": urgency,
+            "signals": {**cls["signals"], "source": "model", "model_confidence": label["confidence"]}}
+
+
 def plan(message: str, *, known_facts: dict[str, str] | None = None, known_workflow: str | None = None,
-         known_category: str | None = None, asked_counts: dict[str, int] | None = None) -> dict:
-    """Pure planning (no database). `known_facts` come from the case history; `asked_counts` says how often each item was already asked."""
+         known_category: str | None = None, asked_counts: dict[str, int] | None = None,
+         model_fallback: bool | None = None, fallback_client=None) -> dict:
+    """Pure planning (no database). `known_facts` come from the case history; `asked_counts` says how often each item was already asked.
+    `model_fallback` (default: config/planner.yaml) lets one validated model label replace an "unclear" classification (see planner_fallback)."""
     t0 = time.time()
     steps: list[dict] = []
     cls = classify(message, known_workflow=known_workflow, known_category=known_category)
+    use_fb = model_fallback if model_fallback is not None else bool((config().get("model_fallback") or {}).get("enabled"))
+    if cls["workflow"] == "unclear" and use_fb:
+        cls = _apply_model_fallback(message, cls, steps, fallback_client)
     steps.append({"step": "classify", "ms": int((time.time() - t0) * 1000), "output": {k: cls[k] for k in ("workflow", "category", "urgency")}})
     new = extract_facts(message)
     merged = {**(known_facts or {}), **new}

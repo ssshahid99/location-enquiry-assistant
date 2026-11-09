@@ -15,9 +15,11 @@ The orchestrator never sends or applies anything: approval (one authorised human
 """
 import time
 
+from config.settings import count_model_calls
+
 from ..generate.answer import answer
 from ..safety.pii import redact_with_report
-from ..store import cases
+from ..store import cases, customers
 from . import critic, executor, planner, router
 
 
@@ -52,8 +54,16 @@ def prepare_handoff(con, case_id: str) -> dict:
     return {"approval_id": aid, "handoff_ready": not issues, "issues": issues, "text": payload["text"]}
 
 
-def handle_message(con, message: str, *, case_id: str | None = None, customer: str = "unknown", submit: bool = True,
-                   use_rag: bool = True) -> dict:
+def handle_message(con, message: str, **kw) -> dict:
+    """Route and handle one message. The result carries `model_calls` (measured) and `elapsed_ms`."""
+    with count_model_calls() as calls:
+        out = _handle(con, message, **kw)
+    out["model_calls"] = calls.count
+    return out
+
+
+def _handle(con, message: str, *, case_id: str | None = None, customer: str = "unknown", submit: bool = True,
+            use_rag: bool = True) -> dict:
     t0 = time.time()
     clean, found = redact_with_report(message)                 # personal data / secrets are removed before anything is stored or analysed
     case = cases.get_case(con, case_id) if case_id else None
@@ -78,8 +88,10 @@ def handle_message(con, message: str, *, case_id: str | None = None, customer: s
     esc = pl_pre["escalation"]
     cid = case_id or cases.create_case(con, customer=customer, workflow=pl_pre["workflow"],
                                        type="incident" if esc["recommend"] else "case", category=pl_pre["category"], urgency=pl_pre["urgency"])
+    if case_id is None and submit:
+        customers.attach_prior_facts(con, cid)                   # earlier setup facts of this customer: suggested, never assumed
     pl = planner.plan_case(con, cid, clean, submit=submit)
-    out.update({"case_id": cid, "workflow": pl["workflow"], "category": pl["category"], "urgency": pl["urgency"],
+    out.update({"prior_facts": customers.pending_prior_facts(con, cid), "case_id": cid, "workflow": pl["workflow"], "category": pl["category"], "urgency": pl["urgency"],
                 "questions": pl["questions"], "needs_human_followup": pl["needs_human_followup"],
                 "ready_to_proceed": pl["ready_to_proceed"], "escalation": pl["escalation"]})
 

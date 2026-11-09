@@ -7,7 +7,7 @@ must approve (project rule). Set persist=False for evals so they don't write tra
 import re
 import uuid
 
-from config.settings import openai_client, settings
+from config.settings import count_model_calls, openai_client, settings
 
 from ..retrieve.hybrid import retrieve
 from ..safety import escalation
@@ -74,8 +74,18 @@ def _finish(query: str, out: dict, esc: dict, persist: bool) -> dict:
     return out
 
 
-def answer(query: str, *, k: int = TOP_K, persist: bool = True, rewrite: bool = True, route: bool = True,
-           **retrieval_opts) -> dict:
+def answer(query: str, **kw) -> dict:
+    """Grounded answer. The result also carries `model_calls`: how many model requests this answer really made (measured)."""
+    with count_model_calls() as calls:
+        out = _answer(query, **kw)
+    out["model_calls"] = calls.count
+    if kw.get("persist", True) and out.get("trace_id"):
+        repo.set_trace_model_calls(out["trace_id"], calls.count)
+    return out
+
+
+def _answer(query: str, *, k: int = TOP_K, persist: bool = True, rewrite: bool = True, route: bool = True,
+            **retrieval_opts) -> dict:
     """rewrite=True is the default: on the rebuilt corpus it raised cited-passage recall@6 by ~8 points and citation
     support from 74% to 90% (60-question A/B); re-ranking hurt and k=8 did not help, so both stay off."""
     trace_id = uuid.uuid4().hex[:12]

@@ -1,4 +1,4 @@
-﻿"""SQLite connection (traces, cases, messages, approvals, case events, facts). File: data/lbs.db (gitignored)."""
+"""SQLite connection (traces, cases, messages, approvals, case events, facts). File: data/lbs.db (gitignored)."""
 import sqlite3
 from pathlib import Path
 
@@ -11,6 +11,7 @@ SCHEMA = Path(__file__).with_name("schema.sql")
 _ADDED_COLUMNS = {
     "cases": {"type": "TEXT", "workflow": "TEXT", "provider": "TEXT", "api": "TEXT", "category": "TEXT", "urgency": "TEXT",
               "next_action": "TEXT", "state_json": "TEXT", "updated_at": "TEXT"},
+    "traces": {"reason": "TEXT", "model_calls": "INT", "case_id": "TEXT", "citations_json": "TEXT"},
     "proposed_actions": {"requested_by": "TEXT", "decision_note": "TEXT", "edited_payload_json": "TEXT", "applied_at": "TEXT",
                          "applied_result": "TEXT"},
 }

@@ -62,6 +62,10 @@ def eval_routing(items):
 
 
 # ------------------------------------------------------------------------------------------------ 2. approval gates
+LAST_GATES: list[int] = [0, 0]      # [invariants that hold, invariants checked] from the latest eval_gates() call
+LAST_CRITIC: dict = {}              # {"clean_flagged", "clean_n", "caught": {seed: [hit, n]}} from the latest eval_critic() call
+
+
 def eval_gates():
     """Runs the gate checks against a STUBBED RAG, then restores the real one (a later part of this script uses the real RAG)."""
     import lbs_rag.generate.answer as A
@@ -119,6 +123,7 @@ def _eval_gates_inner(A):
     for name, good in checks:
         if not good:
             print("   FAIL:", name)
+    LAST_GATES[:] = [ok, len(checks)]          # read by eval/gates.py
     return ok == len(checks)
 
 
@@ -170,6 +175,8 @@ def eval_critic():
     clean_flagged = sum(1 for c, s in pairs if critic.review(result(c, s), plan, chunks=chunks)["issues"])
     print("\n== 3. CRITIC on seeded wrong claims (real corpus sentences) ==")
     print(f"clean supported sentences wrongly flagged: {clean_flagged}/{len(pairs)} = {clean_flagged / len(pairs):.1%}")
+    LAST_CRITIC.clear()
+    LAST_CRITIC.update(clean_flagged=clean_flagged, clean_n=len(pairs), caught={})
     for name, (make, expected) in seeds.items():
         n = hit = 0
         for c, s in pairs:
@@ -180,6 +187,7 @@ def eval_critic():
             rep = critic.review(result(c, seeded), plan, chunks=chunks)
             hit += any(i["check"] in expected for i in rep["issues"])
         print(f"  {name:<18} caught {hit}/{n} = {hit / max(n, 1):.1%}")
+        LAST_CRITIC["caught"][name] = [hit, n]
     from lbs_rag.tools.capabilities import match_capabilities
     caps = match_capabilities("optimise the order of stops", ["Ola Maps", "HERE"])
     c0 = pairs[0][0]
@@ -193,7 +201,7 @@ def eval_critic():
 def eval_chain(items, n):
     sample = [i for i in items if not str(i["intent"]).startswith("pricing")][::max(1, len(items) // n)][:n]
     con = connect(Path(tempfile.mkdtemp()) / "chain.db")
-    by_route = collections.defaultdict(list)
+    by_route, calls_by_route = collections.defaultdict(list), collections.defaultdict(list)
     verdicts, ready, approvals, errors = collections.Counter(), [0, 0], [], []
     for it in sample:
         try:
@@ -202,6 +210,7 @@ def eval_chain(items, n):
             errors.append((it["ID"], f"{type(e).__name__}: {e}"))
             continue
         by_route[r["route"]].append(r["elapsed_ms"])
+        calls_by_route[r["route"]].append(r["model_calls"])
         if r.get("critic"):
             verdicts[r["critic"]["verdict"]] += 1
             ready[1] += 1
@@ -210,8 +219,9 @@ def eval_chain(items, n):
             approvals.append(len(r["approvals"]))
     print(f"\n== 4. CHAIN on {len(sample)} real questions (real RAG) ==")
     for route, ms in by_route.items():
-        print(f"  {route:<8} n={len(ms):<3} mean latency {sum(ms) / len(ms) / 1000:.1f}s   model calls per message: "
-              f"{'0 (code only)' if route == 'human' else '1-3 (RAG: rewrite, price extraction, generation)'}")
+        mc = calls_by_route[route]
+        print(f"  {route:<8} n={len(ms):<3} mean latency {sum(ms) / len(ms) / 1000:.1f}s   MEASURED model calls per message: "
+              f"mean {sum(mc) / len(mc):.1f} (min {min(mc)}, max {max(mc)})")
     print("  critic verdicts:", dict(verdicts), "| handoff ready:", f"{ready[0]}/{ready[1]}")
     if approvals:
         print(f"  pending approvals per case: mean {sum(approvals) / len(approvals):.1f}, max {max(approvals)}")
@@ -219,8 +229,56 @@ def eval_chain(items, n):
         print("  ERROR", e)
 
 
+# ------------------------------------------------------------------------------------------------ 5. handoff completeness (offline)
+def eval_handoff(items, n, real=False):
+    """A7: how complete is the handoff package for the cases the Router sends to the agent or a person?
+    real=False: offline (RAG stubbed, Executor without RAG). NOTE: without RAG the Executor records no findings, and a handoff with no
+    findings is flagged "no findings recorded yet", so this mode only checks the plumbing; use real=True (uses the gateway) for the number.
+    Each case is ONE message with no follow-up, so gaps are expected where the customer did not give the evidence: that is exactly what
+    the handoff must flag, never hide."""
+    import lbs_rag.generate.answer as A
+    saved = (A.answer, orchestrator.answer)
+    if not real:
+        A.answer = orchestrator.answer = lambda q, **k: {"text": "stub", "citations": [], "abstained": False, "refused": False, "escalate": False,
+                                                         "reason": None, "trace_id": "t", "tool_calls": []}
+    try:
+        con = connect(Path(tempfile.mkdtemp()) / "handoff.db")
+        routed = [(it, router.route(it["Question"])["route"]) for it in items]
+        picked = [(it, r) for it, r in routed if r in ("agent", "human")][:n]
+        ready, gaps, per_route, errors = 0, collections.Counter(), collections.defaultdict(lambda: [0, 0]), []
+        for it, rt in picked:
+            try:
+                r = orchestrator.handle_message(con, it["Question"], use_rag=real)
+                h = r.get("handoff") or orchestrator.prepare_handoff(con, r["case_id"])
+            except Exception as e:  # noqa: BLE001
+                errors.append((it["ID"], f"{type(e).__name__}: {e}"))
+                continue
+            ok = not h["issues"]
+            ready += ok
+            per_route[r["route"]][0] += ok
+            per_route[r["route"]][1] += 1
+            for i in h["issues"]:
+                gaps[i.get("detail", "")[:60] or i.get("check")] += 1
+        done = sum(v[1] for v in per_route.values())
+        print(f"\n== 5. HANDOFF COMPLETENESS on {done} cases routed to the agent or a person (development split, {'real RAG' if real else 'OFFLINE: plumbing check only'}) ==")
+        print(f"complete (no gaps flagged): {ready}/{done} = {ready / max(done, 1):.1%}")
+        for k, (ok, tot) in per_route.items():
+            print(f"  {k:<7} {ok}/{tot} complete")
+        print("  most common gaps flagged:", dict(gaps.most_common(6)))
+        for e in errors:
+            print("  ERROR", e)
+        LAST_HANDOFF.update(done=done, ready=ready, errors=len(errors))
+    finally:
+        A.answer, orchestrator.answer = saved
+
+
+LAST_HANDOFF: dict = {}
+
+
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--handoff", type=int, default=0, help="handoff completeness on N cases routed to the agent or a person")
+    ap.add_argument("--real", action="store_true", help="with --handoff: use the real RAG (gateway); without it the check is offline and only tests the plumbing")
     ap.add_argument("--chain", type=int, default=0, help="also run N real questions through the full chain (uses the gateway)")
     ap.add_argument("--show", action="store_true")
     a = ap.parse_args()
@@ -231,6 +289,8 @@ def main():
             print("  MISS", w)
     gates_ok = eval_gates()
     eval_critic()
+    if a.handoff:
+        eval_handoff(items, a.handoff, real=a.real)
     if a.chain:
         eval_chain(items, a.chain)
     sys.exit(0 if gates_ok else 1)

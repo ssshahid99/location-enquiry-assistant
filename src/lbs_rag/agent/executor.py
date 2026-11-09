@@ -44,6 +44,41 @@ _OLA_PATH_HINT = {"directions": "/routing/v1/directions", "distance matrix": "/r
                   "reverse geocode": "reverse", "autocomplete": "autocomplete"}
 
 
+_SECRETS = {"key", "api_key", "access_token", "apikey"}
+
+
+@lru_cache(maxsize=1)
+def documented_required_params() -> list[dict]:
+    """Required-parameter lists from config/required_params.yaml (each parameter has a verbatim quote verified by a test)."""
+    import yaml
+    from pathlib import Path
+    raw = yaml.safe_load((Path(__file__).resolve().parents[3] / "config" / "required_params.yaml").read_text(encoding="utf-8"))["entries"]
+    return [{**e, "_when": re.compile(e["when"], re.I) if e.get("when") else None} for e in raw]
+
+
+def _documented_required_check(provider: str | None, apis: list[str], message: str, given: set[str]) -> list[dict]:
+    """Required parameters for providers whose fetched pages state them. Anything without an entry is reported as unknown, never guessed."""
+    unknown = [{"check": "required_params", "ok": None,
+                "detail": f"No verified required-parameter list is held for {provider or 'this provider'}"
+                          f"{' / ' + ', '.join(apis) if apis else ''}; compare against the vendor reference."}]
+    entries = [e for e in documented_required_params() if e["provider"] == provider and e["api"] in (apis or [])
+               and (e["_when"] is None or e["_when"].search(message))]
+    if not entries:
+        return unknown
+    out = []
+    for e in entries:
+        missing = []
+        for p in e["params"]:
+            names = {n.lower() for n in p["names"]}
+            if names & _SECRETS or names & given or (p.get("seen_if") and re.search(p["seen_if"], message, re.I)):
+                continue
+            missing.append(" or ".join(p["names"]))
+        out.append({"check": "required_params", "ok": not missing, "endpoint": f"{provider} {e['api']}", "source": e["url"],
+                    "detail": (f"{provider} {e['api']}: documented required parameters not shown: {', '.join(missing)} ({e['url']})" if missing
+                               else f"{provider} {e['api']}: all documented required parameters are present")})
+    return out
+
+
 def required_params_check(provider: str | None, apis: list[str], message: str) -> list[dict]:
     """Which documented required parameters are absent from the parameters the customer showed. Ola only: it is the one provider whose
     required-parameter list we hold from an authoritative machine-readable spec; for the others we say so instead of guessing."""
@@ -52,8 +87,7 @@ def required_params_check(provider: str | None, apis: list[str], message: str) -
     if not given:
         return []
     if provider != "Ola Maps":
-        return [{"check": "required_params", "ok": None,
-                 "detail": f"No verified required-parameter list is held for {provider or 'this provider'}; compare against the vendor reference."}]
+        return _documented_required_check(provider, apis, message, given)
     spec = ola_required_params()
     out = []
     for api in apis or []:

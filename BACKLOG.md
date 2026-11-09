@@ -12,7 +12,7 @@ per-step traces, FastAPI, Streamlit UI (Ask | Cases | Approvals), evaluation scr
 - [x] Cases / Approvals / Close-reopen tabs clicked through in a browser by Deepshikha: "working as expected" (2026-11-09). Case close/reopen added (authorised approver + written note; waiting approvals are cancelled, never applied).
 - [x] Live-model chain evaluation DONE (`python eval/agent_eval.py --chain 24`, 18 real non-price development questions): agent route mean 12.4 s, direct RAG route 5.3 s; Critic 10/10 pass; handoff ready 10/10;
       pending approvals per case mean 3.1 (max 4). Small sample; the "model calls per message" line in the script's output is a static note, not a measurement.
-- [ ] Rerun all 400 development questions with the grounding check + marker fix (answer quality was last measured BEFORE both; last full run 276/99/25 judged correct/partial/incorrect).
+- [x] Rerun of the 400 development questions done 2026-11-09 with the grounding check + marker fix: 268/94/38 (was 276/99/25), citation support 83.0% (was 78.0%), 22 more abstentions. See PROJECT_CHECKLIST R1a / R8: the grounding check abstains on some answers that were correct; investigate before the freeze.
 - [ ] Human review of `eval/review/answer_review_v2.xlsx` (30 answers; Claude's verdicts are unreviewed; the Qwen judge is generous).
 - [ ] Tester round (40-60 realistic questions, rephrasings, things that must be refused, multi-turn cases). Log findings; add facts / guard phrasings from them.
 - [ ] Holdout 100: run ONCE after the final changes; never tune against it.
@@ -23,7 +23,7 @@ per-step traces, FastAPI, Streamlit UI (Ask | Cases | Approvals), evaluation scr
 - [ ] Knowledge-base source confirmation (SC-03): we built it from the 114 ground-truth links.
 - [ ] Confirm the human-approval points (operational updates, escalations, external sends, other consequential actions) and who the approvers are (now: deepshikha only; one approval is always enough).
 - [ ] HERE list prices (page never rendered; answers abstain). Ola Distance Matrix free allowance: pairs or requests (`pricing.yaml`: pairs, UNCONFIRMED).
-- [ ] Ask the gateway owner for a stronger model than `Qwen3-8B` (one-line change in `config/settings.py`; likely the biggest gain on explanatory questions).
+- [-] Stronger model than `Qwen3-8B`: not possible (only this model is available, infrastructure cannot change; decided 2026-11-09). Explanatory-question gains must come from prompts, retrieval and code checks.
 - [ ] Technology stack / repository / model provider are still "TBD" in the project document.
 
 ## C. Quality improvements (accuracy, safety, usability)
@@ -43,5 +43,5 @@ per-step traces, FastAPI, Streamlit UI (Ask | Cases | Approvals), evaluation scr
 - [ ] Cost-accuracy trade-off write-up (minutes' consideration): routing mix (~68% RAG / 30% agent / 1% person), model calls per route (agent chain adds none beyond the RAG call), latency (from the chain eval).
 - [ ] Update the project activity tracker (RAG pipeline tasks; evaluation tasks).
 - [ ] Stretch goal (optional): compliance requirements and checks.
-- [ ] Optional: trace dashboard (Langfuse needs Docker; SQLite traces exist), notifications, login for the UI (none today), deployment, multi-approver roles.
+- [ ] Optional extras (parked here on purpose, not in the project checklist): trace dashboard (Langfuse needs Docker; SQLite traces exist), notifications, login for the UI (none today), deployment, multi-approver roles, LangGraph wrapper, stretch goal "compliance requirements and checks".
 - [ ] Note: the agent layer is plain Python orchestration (not LangGraph); it has explicit state, pause/resume and tests. LangGraph can wrap it later if the team wants it.

@@ -186,3 +186,11 @@ def test_provider_is_not_blanked_by_a_later_message(con):
     P.plan_case(con, cid, "Ola Directions returns 429 for most calls", submit=False)
     P.plan_case(con, cid, "started at 14:05 IST", submit=False)
     assert cases.get_case(con, cid)["provider"] == "Ola Maps"
+
+
+def test_http_status_codes_are_not_a_request_volume():
+    # found by the demo-scenario acceptance test: "returns 500 for some requests" was recorded as a stated volume
+    f = P.extract_facts("Ola Directions returns 500 for some requests since this morning.")
+    assert "volume" not in f
+    assert P.extract_facts("We expect about 2 million lookups a month")["volume"]
+    assert P.extract_facts("Our traffic is 500 requests per minute")["volume"]          # a real volume still counts
