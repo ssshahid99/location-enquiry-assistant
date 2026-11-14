@@ -1,0 +1,855 @@
+sources:
+- url: https://developers.google.com/maps/api-security-best-practices
+  provider: Google Maps Platform
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 9
+- url: https://developers.google.com/maps/billing-and-pricing/pricing-india
+  provider: Google Maps Platform
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 221
+- url: https://developers.google.com/maps/documentation/directions/get-directions
+  provider: Google Maps Platform
+  api: Directions
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 86
+- url: https://developers.google.com/maps/documentation/directions/usage-and-billing
+  provider: Google Maps Platform
+  api: Directions
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 6
+- url: https://developers.google.com/maps/documentation/distance-matrix/distance-matrix
+  provider: Google Maps Platform
+  api: Distance Matrix
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 80
+- url: https://developers.google.com/maps/documentation/distance-matrix/usage-and-billing
+  provider: Google Maps Platform
+  api: Distance Matrix
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 41
+- url: https://developers.google.com/maps/documentation/geocoding/policies
+  provider: Google Maps Platform
+  api: Reverse Geocode
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 30
+- url: https://developers.google.com/maps/documentation/geocoding/requests-reverse-geocoding
+  provider: Google Maps Platform
+  api: Reverse Geocode
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 80
+- url: https://developers.google.com/maps/documentation/geocoding/usage-and-billing
+  provider: Google Maps Platform
+  api: Reverse Geocode
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 8
+- url: https://developers.google.com/maps/documentation/places/web-service/legacy/autocomplete
+  provider: Google Maps Platform
+  api: Autocomplete
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 71
+- url: https://developers.google.com/maps/documentation/places/web-service/place-autocomplete
+  provider: Google Maps Platform
+  api: Autocomplete
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 18
+- url: https://developers.google.com/maps/documentation/places/web-service/session-pricing
+  provider: Google Maps Platform
+  api: Autocomplete
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 39
+- url: https://developers.google.com/maps/documentation/routes/compute_route_matrix
+  provider: Google Maps Platform
+  api: Distance Matrix
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 26
+- url: https://developers.google.com/maps/documentation/routes/coverage-two-wheeled
+  provider: Google Maps Platform
+  api: Directions
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 5
+- url: https://developers.google.com/maps/documentation/routes/usage-and-billing
+  provider: Google Maps Platform
+  api: Directions
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 63
+- url: https://developers.google.com/maps/faq
+  provider: Google Maps Platform
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 34
+- url: https://docs.here.com/geocoding-and-search/docs/autosuggest
+  provider: HERE
+  api: Autocomplete
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 20
+- url: https://docs.here.com/geocoding-and-search/docs/code-autocomplete-country-filter
+  provider: HERE
+  api: Autocomplete
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 3
+- url: https://docs.here.com/geocoding-and-search/docs/geocode-local-coverage
+  provider: HERE
+  api: Reverse Geocode
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 15
+- url: https://docs.here.com/geocoding-and-search/docs/reverse-geocode
+  provider: HERE
+  api: Reverse Geocode
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 6
+- url: https://docs.here.com/policies/docs/limits-and-quotas
+  provider: HERE
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 69
+- url: https://docs.here.com/routing/docs/matrix-v8-intro
+  provider: HERE
+  api: Distance Matrix
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 26
+- url: https://docs.here.com/routing/docs/routing-v8-intro
+  provider: HERE
+  api: Directions
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 3
+- url: https://docs.here.com/routing/docs/routing-v8-navigable-countries
+  provider: HERE
+  api: Directions
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 16
+- url: https://docs.here.com/routing/docs/routing-v8-traffic-in-routing
+  provider: HERE
+  api: Directions
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 4
+- url: https://docs.mapbox.com/api/navigation/directions/
+  provider: Mapbox
+  api: Directions
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 22
+- url: https://docs.mapbox.com/api/navigation/matrix/
+  provider: Mapbox
+  api: Distance Matrix
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 55
+- url: https://docs.mapbox.com/api/search/geocoding/
+  provider: Mapbox
+  api: Reverse Geocode
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 41
+- url: https://docs.mapbox.com/api/search/search-box/
+  provider: Mapbox
+  api: Autocomplete
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 28
+- url: https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server
+  provider: OSRM
+  api: Directions
+  kind: html
+  licence: BSD-2 / project docs
+  fetch_method: httpx
+  gold_citations: 41
+- url: https://maps.olakrutrim.com/
+  provider: Ola Maps
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 1
+- url: https://maps.olakrutrim.com/docs
+  provider: Ola Maps
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 37
+- url: https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml
+  provider: Ola Maps
+  api: general
+  kind: openapi
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 249
+- url: https://maps.olakrutrim.com/pricing/details
+  provider: Ola Maps
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 315
+- url: https://maps.olakrutrim.com/pricing/update-2026
+  provider: Ola Maps
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 49
+- url: https://nominatim.org/release-docs/latest/api/Reverse/
+  provider: OSM Nominatim
+  api: Reverse Geocode
+  kind: html
+  licence: GPL-2 / project docs
+  fetch_method: httpx
+  gold_citations: 18
+- url: https://nominatim.org/release-docs/latest/api/Search/
+  provider: OSM Nominatim
+  api: general
+  kind: html
+  licence: GPL-2 / project docs
+  fetch_method: httpx
+  gold_citations: 2
+- url: https://operations.osmfoundation.org/policies/nominatim/
+  provider: OSM Nominatim
+  api: general
+  kind: html
+  licence: OSMF policy
+  fetch_method: httpx
+  gold_citations: 105
+- url: https://project-osrm.org/docs/v5.24.0/api/
+  provider: OSRM
+  api: Directions
+  kind: html
+  licence: BSD-2 / project docs
+  fetch_method: httpx
+  gold_citations: 34
+- url: https://stackoverflow.com/questions/10174295
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/10653023
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/10923769
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/11231457
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/11912668
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/12479715
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/13042075
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/13587145
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/13836834
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/14654758
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/14659008
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 1
+- url: https://stackoverflow.com/questions/15036007
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/16132591
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/17222386
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/17713874
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/19021320
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/20647087
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/2235655
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/2296377
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/23605262
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/25144508
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/26453387
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 1
+- url: https://stackoverflow.com/questions/27392333
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/27791801
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/31109727
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/31625112
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/33935119
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/34179717
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/35218909
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/36019006
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/36272322
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/38891106
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/39171303
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/39726945
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/40683330
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/41155676
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/41724833
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/41891702
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/42942017
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/4418875
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/44851641
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/45176988
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/45871512
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/46748233
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/47393315
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/47782514
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/48027387
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/49129939
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/50187750
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 1
+- url: https://stackoverflow.com/questions/50398801
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 1
+- url: https://stackoverflow.com/questions/50659938
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/51048769
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/51485115
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/52321735
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/52959432
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/53396859
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/5341023
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/53588002
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/53720616
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/54608214
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/54945260
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/56164932
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/56405576
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 1
+- url: https://stackoverflow.com/questions/56590521
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/57340818
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/58734825
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/64032538
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/7179452
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/75314869
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/78234081
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/8282026
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 0
+- url: https://stackoverflow.com/questions/8779886
+  provider: Stack Overflow
+  api: mixed
+  kind: stackoverflow
+  licence: CC BY-SA 4.0
+  fetch_method: stackexchange_api
+  gold_citations: 1
+- url: https://www.mapbox.com/pricing
+  provider: Mapbox
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 80
+- url: https://www.openstreetmap.org/copyright
+  provider: OSM
+  api: general
+  kind: html
+  licence: ODbL
+  fetch_method: httpx
+  gold_citations: 9
+- url: https://www.rbi.org.in/
+  provider: RBI (FX rate)
+  api: general
+  kind: html
+  licence: public reference
+  fetch_method: playwright
+  gold_citations: 124
+- url: https://developers.google.com/maps/coverage
+  provider: Google Maps Platform
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 38
+- url: https://developers.google.com/maps/support
+  provider: Google Maps Platform
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 4
+- url: https://docs.mapbox.com/api/guides
+  provider: Mapbox
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 11
+- url: https://docs.mapbox.com/accounts/guides/tokens
+  provider: Mapbox
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 7
+- url: https://developer.mappls.com/documentation/sdk/rest-apis/mappls-routing-api/readme
+  provider: Mappls (MapmyIndia)
+  api: Directions
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 10
+- url: https://developer.mappls.com/documentation/sdk/rest-apis/mappls-distance-matrix-api/readme
+  provider: Mappls (MapmyIndia)
+  api: Distance Matrix
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 23
+- url: https://developer.mappls.com/documentation/sdk/rest-apis/mappls-maps-auto-suggest-api-example/Readme
+  provider: Mappls (MapmyIndia)
+  api: Autocomplete
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 20
+- url: https://developer.mappls.com/documentation/sdk/rest-apis/mappls-maps-reverse-geocoding-rest-api-example/Readme
+  provider: Mappls (MapmyIndia)
+  api: Reverse Geocode
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 15

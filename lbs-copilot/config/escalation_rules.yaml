@@ -1,0 +1,30 @@
+﻿# Rule-based escalation (transparent, auditable). First matching category wins; all regexes are case-insensitive.
+# A rule fires when ANY `any` pattern matches AND (if present) ANY `and_any` pattern also matches.
+# `owner` is who the handoff goes to; `collect` is what the customer should gather first.
+# Tuned on the eval split only; the holdout split is untouched until the final run.
+rules:
+  - category: security_incident
+    owner: "Provider security / billing support (Ola: maps-support@olakrutrim.com; Google: Google Cloud billing support)"
+    collect: [key identifier, usage-by-key report, time of first abuse]
+    any: ['\bleak(ed)?\b', 'exposed (api )?key', 'pushed .{0,40}(github|repo)', 'bot attack', 'api key .{0,30}(stolen|compromis)', 'abuse']
+    and_any: ['key', 'bill', 'charge', 'usage', 'repo']
+  - category: production_incident
+    owner: "Provider support / maps engineering (Ola: maps-support@olakrutrim.com)"
+    collect: [sample request ids, timestamps, request payloads, error codes and counts]
+    # "production" counts only as a declared status ("PRODUCTION:", "production is degraded"), not as "in production"
+    any: ['\bproduction\s*:', '\bproduction (is|system)\b', '\burgent\b', '\boutage\b', '\bis down\b', '\bare down\b', '\bdegraded\b', '\bwhole .{0,30}down\b']
+    and_any: ['\b5\d\d\b', '5xx', '429', '\bempty\b', '\bfail', '\bdown\b', 'returns', 'degraded', 'wrong']
+    not_any: ["(not|n't|no) (an? )?outage", 'not (yet )?(an? )?(incident|urgent)']
+  - category: billing_incident
+    owner: "Provider account team (Ola: maps-support@olakrutrim.com)"
+    collect: [account id, credit balance and top-up receipt, time service stopped]
+    any: ['credits? (ran out|hit zero|exhausted|are exhausted)', 'balance (hit|is|reached) zero']
+    and_any: ['stopped', 'not working', 'restore', 'blocked', 'down']
+  - category: contract_request
+    owner: "Provider account team / sales (Ola: maps-support@olakrutrim.com)"
+    collect: [monthly volume, regions, SLA or residency or deployment requirements, contract timeline]
+    any: ['\bSLA\b', 'on-?prem', 'data residency', 'committed[- ]use', 'negotiat', "we'?ve committed", 'custom (plan|pricing)', 'enterprise agreement']
+  - category: data_quality
+    owner: "Provider maps engineering (Ola: maps-support@olakrutrim.com)"
+    collect: [input, returned vs expected values, place_id, timestamps]
+    any: ['misspelt', 'wrong (city|pin ?code|locality|name|address)', 'labell?ed .{0,20}(as|wrong)', 'lower than actual', 'higher than actual', 'user reports .{0,60}wrong', 'offends']

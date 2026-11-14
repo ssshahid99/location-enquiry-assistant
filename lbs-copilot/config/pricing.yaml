@@ -1,0 +1,75 @@
+﻿# Source of truth for prices and limits. The LLM never does this arithmetic; tools/pricing_calc.py does.
+# Tiers are MARGINAL: [up_to_cumulative_units, rate_per_`per`_units]; rate 0 = free allowance.
+# `beyond: contact_sales` means usage past the last bound has no published list price.
+# Values were read from the fetched vendor pages (data/raw/2026-11-08). HERE is intentionally absent:
+# its price page did not render, so the system must abstain ("ask HERE for a quote") instead of guessing.
+
+fx:
+  usd_inr: 94.1402
+  source: FBIL via rbi.org.in
+  as_of: 2026-11-06
+
+ola:
+  distance_matrix_free_counts: pairs   # pairs | requests - UNCONFIRMED, ask Ola (rate card says "100K free calls per API")
+
+skus:
+  # ---- Ola Maps (INR, per request; Distance Matrix per origin-destination pair). Effective 1 Sept 2026, prepaid credits.
+  ola.autocomplete:            {provider: Ola Maps, api: Autocomplete,     currency: INR, per: 1, unit: request, tiers: [[100000, 0], [5000000, 0.056], [null, 0.013]]}
+  ola.place_details:           {provider: Ola Maps, api: Autocomplete,     currency: INR, per: 1, unit: request, tiers: [[100000, 0], [5000000, 0.099], [null, 0.025]]}
+  ola.reverse_geocode:         {provider: Ola Maps, api: Reverse Geocode,  currency: INR, per: 1, unit: request, tiers: [[100000, 0], [5000000, 0.099], [null, 0.025]]}
+  ola.directions:              {provider: Ola Maps, api: Directions,       currency: INR, per: 1, unit: request, tiers: [[100000, 0], [5000000, 0.199], [null, 0.049]]}
+  ola.directions_basic:        {provider: Ola Maps, api: Directions,       currency: INR, per: 1, unit: request, tiers: [[100000, 0], [5000000, 0.099], [null, 0.025]]}
+  ola.distance_matrix:         {provider: Ola Maps, api: Distance Matrix,  currency: INR, per: 1, unit: pair,    tiers: [[100000, 0], [5000000, 0.199], [null, 0.049]]}
+  ola.distance_matrix_basic:   {provider: Ola Maps, api: Distance Matrix,  currency: INR, per: 1, unit: pair,    tiers: [[100000, 0], [5000000, 0.099], [null, 0.025]]}
+
+  # ---- Google Maps Platform, India price list (USD per 1,000; effective Aug 1 2024). Essentials 70k free, Pro 35k, Enterprise 7k.
+  google.autocomplete_request:      {provider: Google Maps Platform, api: Autocomplete,     currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[70000, 0], [5000000, 0.85], [10000000, 0.21]]}
+  google.autocomplete_nodetails_session: {provider: Google Maps Platform, api: Autocomplete, currency: USD, per: 1000, unit: session, beyond: contact_sales, tiers: [[35000, 0], [5000000, 5.10], [10000000, 1.28]]}
+  google.place_details_essentials:  {provider: Google Maps Platform, api: Autocomplete,     currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[70000, 0], [5000000, 1.50], [10000000, 0.38]]}
+  google.place_details_pro:         {provider: Google Maps Platform, api: Autocomplete,     currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[35000, 0], [5000000, 5.10], [10000000, 1.28]]}
+  google.geocoding:                 {provider: Google Maps Platform, api: Reverse Geocode,  currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[70000, 0], [5000000, 1.50], [10000000, 0.38]]}
+  google.compute_routes_essentials: {provider: Google Maps Platform, api: Directions,       currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[70000, 0], [5000000, 1.50], [10000000, 0.38]]}
+  google.compute_routes_pro:        {provider: Google Maps Platform, api: Directions,       currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[35000, 0], [5000000, 3.00], [10000000, 0.75]]}
+  google.compute_routes_enterprise: {provider: Google Maps Platform, api: Directions,       currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[7000, 0], [5000000, 4.50], [10000000, 1.14]]}
+  google.route_matrix_essentials:   {provider: Google Maps Platform, api: Distance Matrix,  currency: USD, per: 1000, unit: element, beyond: contact_sales, tiers: [[70000, 0], [5000000, 1.50], [10000000, 0.38]]}
+  google.route_matrix_pro:          {provider: Google Maps Platform, api: Distance Matrix,  currency: USD, per: 1000, unit: element, beyond: contact_sales, tiers: [[35000, 0], [5000000, 3.00], [10000000, 0.75]]}
+  google.route_matrix_enterprise:   {provider: Google Maps Platform, api: Distance Matrix,  currency: USD, per: 1000, unit: element, beyond: contact_sales, tiers: [[7000, 0], [5000000, 4.50], [10000000, 1.14]]}
+  # Legacy APIs share the Essentials/Pro India rates (Directions / Distance Matrix, "Advanced" = traffic or modifiers)
+  google.directions_legacy:         {provider: Google Maps Platform, api: Directions,       currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[70000, 0], [5000000, 1.50], [10000000, 0.38]]}
+  google.directions_advanced_legacy: {provider: Google Maps Platform, api: Directions,      currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[35000, 0], [5000000, 3.00], [10000000, 0.75]]}
+  google.distance_matrix_legacy:    {provider: Google Maps Platform, api: Distance Matrix,  currency: USD, per: 1000, unit: element, beyond: contact_sales, tiers: [[70000, 0], [5000000, 1.50], [10000000, 0.38]]}
+  google.distance_matrix_advanced_legacy: {provider: Google Maps Platform, api: Distance Matrix, currency: USD, per: 1000, unit: element, beyond: contact_sales, tiers: [[35000, 0], [5000000, 3.00], [10000000, 0.75]]}
+
+  # ---- Mapbox (USD per 1,000)
+  mapbox.directions:           {provider: Mapbox, api: Directions,      currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[100000, 0], [500000, 2.00], [1000000, 1.60], [5000000, 1.20]]}
+  mapbox.matrix:               {provider: Mapbox, api: Distance Matrix, currency: USD, per: 1000, unit: element, beyond: contact_sales, tiers: [[100000, 0], [500000, 2.00], [1000000, 1.60], [5000000, 1.20]]}
+  mapbox.optimization:         {provider: Mapbox, api: Directions,      currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[100000, 0], [500000, 2.00], [1000000, 1.60], [5000000, 1.20]]}
+  mapbox.geocoding_temporary:  {provider: Mapbox, api: Reverse Geocode, currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[100000, 0], [500000, 0.75], [1000000, 0.60], [5000000, 0.45]]}
+  mapbox.geocoding_permanent:  {provider: Mapbox, api: Reverse Geocode, currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[500000, 5.00], [1000000, 4.00]]}
+  mapbox.searchbox_requests_intro:    {provider: Mapbox, api: Reverse Geocode, currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[50000, 0], [500000, 1.00], [1000000, 0.85], [5000000, 0.70]]}
+  mapbox.searchbox_requests_standard: {provider: Mapbox, api: Reverse Geocode, currency: USD, per: 1000, unit: request, beyond: contact_sales, tiers: [[25000, 0], [100000, 1.70], [500000, 1.50], [1000000, 1.25]]}
+  mapbox.searchbox_sessions_intro:    {provider: Mapbox, api: Autocomplete,   currency: USD, per: 1000, unit: session, beyond: contact_sales, tiers: [[500, 0], [100000, 3.00], [500000, 2.75], [1000000, 2.50]]}
+  mapbox.searchbox_sessions_standard: {provider: Mapbox, api: Autocomplete,   currency: USD, per: 1000, unit: session, beyond: contact_sales, tiers: [[2500, 0], [100000, 11.50], [200000, 10.00], [500000, 8.40], [1000000, 6.60]]}
+  mapbox.autofill_sessions:    {provider: Mapbox, api: Autocomplete,    currency: USD, per: 1000, unit: session, beyond: contact_sales, tiers: [[1000, 0], [25000, 12.50], [100000, 10.00], [500000, 7.50]]}
+
+# Request limits, from the fetched docs. Coordinate order is how each provider expects "a,b" pairs.
+coord_order:
+  Google Maps Platform: lat,lng
+  Ola Maps: lat,lng
+  HERE: lat,lng
+  Mapbox: lng,lat
+  OSRM: lng,lat
+  OSM Nominatim: lat,lng
+
+limits:
+  google.distance_matrix:  {max_origins: 25, max_destinations: 25, max_elements: 100}   # also 100 elements for traffic (departure_time) requests
+  google.directions:       {max_waypoints: 25, essentials_max_intermediate_waypoints: 10}  # >10 intermediates bills as Pro
+  google.routes_rate:      {max_requests_per_minute: 3000, max_matrix_elements_per_minute: 3000}  # Compute Routes 3,000 QPM; Compute Route Matrix 3,000 EPM
+  mapbox.directions:       {max_coordinates: 25}
+  mapbox.matrix:           {max_coordinates: 25, max_coordinates_driving_traffic: 10, max_elements: 625}
+  mapbox.geocoding_batch:  {max_queries: 1000}
+  ola.distance_matrix:     {max_pairs: 50}    # x origins * y destinations <= 50 per request
+  ola.directions:          {max_waypoints: 25}
+  ola.directions_basic:    {max_waypoints: 10}
+  osm.nominatim:           {max_requests_per_second: 1}
+  osrm.demo_server:        {max_requests_per_second: 1}

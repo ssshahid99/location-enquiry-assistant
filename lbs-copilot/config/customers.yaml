@@ -1,0 +1,15 @@
+# Customer-level history (checklist A2).
+# Facts from an EARLIER case of the same customer are only SUGGESTED on a new case. They become known facts only after a person confirms
+# them (the customer may have changed provider, volume or plans). Only facts about the customer's SETUP are offered; facts about a specific
+# incident (error, timestamp, request, coordinates, request ids, impact, recent change) never carry over.
+carry_forward_keys:
+  - provider_api
+  - use_case
+  - api_needs
+  - volume
+  - regions
+  - budget
+  - constraints
+  - decision_maker
+anonymous_names: ["", "unknown"]     # no history is built for these: they are not an identity
+max_earlier_cases: 5

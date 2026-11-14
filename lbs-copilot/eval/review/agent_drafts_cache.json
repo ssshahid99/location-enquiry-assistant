@@ -1,0 +1,618 @@
+{
+ "GT-LBS-DIR-054": {
+  "id": "GT-LBS-DIR-054",
+  "intent": "migration_question",
+  "message": "In our new GCP project, 'Directions API' can't be enabled in the API library. Our old project still works fine. Why?",
+  "route": "agent",
+  "why": "required information missing: provider_api, error_response, endpoint_request",
+  "category": "troubleshooting",
+  "urgency": "normal",
+  "questions": [
+   "Which provider and API are you calling (for example Ola Directions, Google Distance Matrix)?",
+   "What exact error code or status do you receive, and can you paste the response body?",
+   "Can you share the request you send (endpoint and parameters, with the API key removed)?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nThe Directions API (Legacy) cannot be enabled for new Google Cloud projects as of October 2026. Existing projects remain fully supported, which is why your old project still works fine [5]. For new projects, you should use the Routes API (Compute Routes) instead.\n\nTo move forward we need:\n- Which provider and API are you calling (for example Ola Directions, Google Distance Matrix)?\n- What exact error code or status do you receive, and can you paste the response body?\n- Can you share the request you send (endpoint and parameters, with the API key removed)?\n\nSources:\n[5] Google Maps Platform - https://developers.google.com/maps/documentation/directions/get-directions\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case 9624f12df3 (support / troubleshooting, urgency normal)\nCustomer: unknown | Provider/API: None / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\nFindings:\n- Knowledge answer: The Directions API (Legacy) cannot be enabled for new Google Cloud projects as of October 2026. Existing projects remain fully supported, which is why your old project still works fine [5]. For new projects, you should use the Routes API (Compute Routes) instead.\nOpen questions: provider_api, error_response, endpoint_request\nNext action: not set",
+  "sources": [
+   "https://developers.google.com/maps/documentation/directions/get-directions"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-004": {
+  "id": "GT-LBS-DIR-004",
+  "intent": "coverage_error",
+  "message": "Ola Directions Basic returns 422 'No serviceable boundary found for GeoPoints' for our Dubai routes but works for Pune. Is this a bug? Our sales rep said routing works everywhere.",
+  "route": "agent",
+  "why": "required information missing: timestamp, endpoint_request",
+  "category": "coverage",
+  "urgency": "normal",
+  "questions": [
+   "When did this start (date and time with timezone), and is it still happening?",
+   "Can you share the request you send (endpoint and parameters, with the API key removed)?",
+   "Can you share a few sample coordinates (lat,lng) that fail, and one that works?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nThe 422 error \"No serviceable boundary found for GeoPoints\" indicates that the request coordinates are outside the supported area for the Ola Maps Directions Basic API. This is not a bug but rather a limitation of the service coverage. The Ola Maps Directions Basic API may not support routing in certain regions, such as Dubai, while it works in others like Pune. \n\nThis issue is likely due to the service's geographic coverage, which may not include all areas. The sales rep's statement that \"routing works everywhere\" may not be accurate for all locations. For a definitive answer, you should consult Ola Maps' official documentation or contact their support team for details on serviceable areas.\n\n- **Source**: [1], [3] (for error details and API description).\n\nTo move forward we need:\n- When did this start (date and time with timezone), and is it still happening?\n- Can you share the request you send (endpoint and parameters, with the API key removed)?\n- Can you share a few sample coordinates (lat,lng) that fail, and one that works?\n\nSources:\n[1] Ola Maps - https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml\n[3] Ola Maps - https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case c2b85229b8 (support / coverage, urgency normal)\nCustomer: unknown | Provider/API: Ola Maps / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\n- regions: Dubai\nFindings:\n- Knowledge answer: The 422 error \"No serviceable boundary found for GeoPoints\" indicates that the request coordinates are outside the supported area for the Ola Maps Directions Basic API. This is not a bug but rather a limitation of the service coverage. The Ola Maps Directions Basic API may not support routing in cer\nOpen questions: timestamp, endpoint_request, coordinates\nNext action: not set",
+  "sources": [
+   "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-080": {
+  "id": "GT-LBS-DIR-080",
+  "intent": "policy_question",
+  "message": "Our script hitting router.project-osrm.org gets throttled and blocked. We send about 10 requests per second.",
+  "route": "agent",
+  "why": "support incident category rate_limit",
+  "category": "rate_limit",
+  "urgency": "normal",
+  "questions": [
+   "What exact error code or status do you receive, and can you paste the response body?",
+   "When did this start (date and time with timezone), and is it still happening?",
+   "Can you share a few request IDs or trace IDs from failing calls?",
+   "How many requests are affected (all, a percentage, intermittent), and is this production?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nThe OSRM public demo server has a verified limit of at most 1 request per second for non-commercial use [4]. Your script is sending about 10 requests per second, which exceeds this limit and is likely causing the throttling and blocking you're experiencing. To avoid this, you should either reduce the request rate or consider using a commercial plan or self-hosting the OSRM server if your usage exceeds the public demo server's limits.\n\nTo move forward we need:\n- What exact error code or status do you receive, and can you paste the response body?\n- When did this start (date and time with timezone), and is it still happening?\n- Can you share a few request IDs or trace IDs from failing calls?\n- How many requests are affected (all, a percentage, intermittent), and is this production?\n\nSources:\n[4] OSRM - https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case 80a3fc3c12 (support / rate_limit, urgency normal)\nCustomer: unknown | Provider/API: OSRM / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\n- volume: 10 requests\nFindings:\n- Knowledge answer: The OSRM public demo server has a verified limit of at most 1 request per second for non-commercial use [4]. Your script is sending about 10 requests per second, which exceeds this limit and is likely causing the throttling and blocking you're experiencing. To avoid this, you should either reduce th\nOpen questions: error_response, timestamp, request_ids, impact\nNext action: not set",
+  "sources": [
+   "https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-074": {
+  "id": "GT-LBS-DIR-074",
+  "intent": "error_resolution",
+  "message": "Mapbox Directions returns 422 InvalidInput when we send 30 coordinates for a multi-stop route.",
+  "route": "agent",
+  "why": "required information missing: endpoint_request",
+  "category": "invalid_request",
+  "urgency": "normal",
+  "questions": [
+   "Can you share the request you send (endpoint and parameters, with the API key removed)?",
+   "Can you share a few sample coordinates (lat,lng) that fail, and one that works?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nThe maximum number of coordinates allowed per request is 25 [6]. If you need to send more than 25 coordinates, you will need to split your request into multiple smaller requests.\n\n(Some statements could not be verified against the cited sources and were removed.)\n\nTo move forward we need:\n- Can you share the request you send (endpoint and parameters, with the API key removed)?\n- Can you share a few sample coordinates (lat,lng) that fail, and one that works?\n\nSources:\n[6] Mapbox - https://docs.mapbox.com/api/navigation/directions/\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case a48f42b80a (support / invalid_request, urgency normal)\nCustomer: unknown | Provider/API: Mapbox / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\nFindings:\n- Knowledge answer: The maximum number of coordinates allowed per request is 25 [6]. If you need to send more than 25 coordinates, you will need to split your request into multiple smaller requests.\n\n(Some statements could not be verified against the cited sources and were removed.)\nOpen questions: endpoint_request, coordinates\nNext action: not set",
+  "sources": [
+   "https://docs.mapbox.com/api/navigation/directions/"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-053": {
+  "id": "GT-LBS-DIR-053",
+  "intent": "error_resolution",
+  "message": "Directions requests from our Android app return 'This IP, site or mobile application is not authorized to use this API key'. The key is restricted to our package name.",
+  "route": "agent",
+  "why": "support incident category auth",
+  "category": "auth",
+  "urgency": "normal",
+  "questions": [
+   "Which provider and API are you calling (for example Ola Directions, Google Distance Matrix)?",
+   "What exact error code or status do you receive, and can you paste the response body?",
+   "When did this start (date and time with timezone), and is it still happening?",
+   "Can you share the request you send (endpoint and parameters, with the API key removed)?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nThe error \"This IP, site or mobile application is not authorized to use this API key\" suggests that the API key is not properly configured for the Android app. Since the key is restricted to your package name, ensure that the package name in the API key restrictions matches exactly with the package name of your Android app. Additionally, verify that the API key is correctly integrated into your app and that there are no typos or mismatches in the package name. If the issue persists, check the API key restrictions in the Cloud console and ensure that the key is not also restricted by IP address, as this could cause conflicts [1][5].\n\nTo move forward we need:\n- Which provider and API are you calling (for example Ola Directions, Google Distance Matrix)?\n- What exact error code or status do you receive, and can you paste the response body?\n- When did this start (date and time with timezone), and is it still happening?\n- Can you share the request you send (endpoint and parameters, with the API key removed)?\n\nSources:\n[1] Google Maps Platform - https://developers.google.com/maps/faq\n[5] Google Maps Platform - https://developers.google.com/maps/api-security-best-practices\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case e6819f0f06 (support / auth, urgency normal)\nCustomer: unknown | Provider/API: None / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\n- use_case: app\nFindings:\n- Knowledge answer: The error \"This IP, site or mobile application is not authorized to use this API key\" suggests that the API key is not properly configured for the Android app. Since the key is restricted to your package name, ensure that the package name in the API key restrictions matches exactly with the package \nOpen questions: provider_api, error_response, timestamp, endpoint_request\nNext action: not set",
+  "sources": [
+   "https://developers.google.com/maps/api-security-best-practices",
+   "https://developers.google.com/maps/faq"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-035": {
+  "id": "GT-LBS-DIR-035",
+  "intent": "capability_fit",
+  "message": "We need motorbike/scooter routing for delivery riders in India. Which routing APIs support two-wheelers?",
+  "route": "agent",
+  "why": "sales capability_match: qualification and capability matching",
+  "category": "capability_match",
+  "urgency": "low",
+  "questions": [
+   "Roughly how many requests (or sessions / matrix elements) do you expect per month, now and in 12 months?",
+   "Is there a monthly budget or price target we should stay within?",
+   "What is your target go-live or decision date?",
+   "Any constraints we should know: SLA, data residency, storing results, on-premise, latency?"
+  ],
+  "draft": "Hello,\n\nThanks for reaching out. Based on what you shared, here is how the options line up.\n\nFor motorbike/scooter routing in India, the following APIs support this use case:\n\n- **Ola Maps**: Supports motorbike/scooter routing via the `mode` parameter, which accepts `driving`, `walking`, `bike`, or `auto`.\n- **Mapbox**: Supports motorbike/scooter routing through the `mapbox/cycling` profile, which is suitable for two-wheelers [9].\n- **OSRM**: Supports motorbike/scooter routing via the `bike` profile, which is available on the public demo server. However, it is recommended to self-host for production use [10].\n**HERE** and **Google Maps Platform** do not explicitly mention support for motorbike/scooter routing in the provided sources, so further verification is needed [3][5].\n\n(Some statements could not be verified against the cited sources and were removed.)\n\nTo move forward we need:\n- Roughly how many requests (or sessions / matrix elements) do you expect per month, now and in 12 months?\n- Is there a monthly budget or price target we should stay within?\n- What is your target go-live or decision date?\n- Any constraints we should know: SLA, data residency, storing results, on-premise, latency?\n\nSources:\n[3] HERE - https://docs.here.com/routing/docs/matrix-v8-intro\n[5] Google Maps Platform - https://developers.google.com/maps/billing-and-pricing/pricing-india\n[9] Mapbox - https://docs.mapbox.com/api/navigation/directions/\n[10] OSRM - https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case 2cfff25ebb (sales / capability_match, urgency low)\nCustomer: unknown | Provider/API: None / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\n- regions: India\n- use_case: delivery\nFindings:\n- Knowledge answer: For motorbike/scooter routing in India, the following APIs support this use case:\n\n- **Ola Maps**: Supports motorbike/scooter routing via the `mode` parameter, which accepts `driving`, `walking`, `bike`, or `auto`.\n- **Mapbox**: Supports motorbike/scooter routing through the `mapbox/cycling` profile\nOpen questions: volume, budget, timeline, constraints\nNext action: not set",
+  "sources": [
+   "https://developers.google.com/maps/billing-and-pricing/pricing-india",
+   "https://docs.here.com/routing/docs/matrix-v8-intro",
+   "https://docs.mapbox.com/api/navigation/directions/",
+   "https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-002": {
+  "id": "GT-LBS-DIR-002",
+  "intent": "parameter_troubleshooting",
+  "message": "Our Google Directions API response only has `duration`. We never see `duration_in_traffic`. We send mode=driving and departure_time set to yesterday 9am so we can compare. What's wrong?",
+  "route": "agent",
+  "why": "support incident category data_quality",
+  "category": "data_quality",
+  "urgency": "normal",
+  "questions": [
+   "What exact error code or status do you receive, and can you paste the response body?",
+   "Can you share a few sample coordinates (lat,lng) that fail, and one that works?",
+   "Can you share a few request IDs or trace IDs from failing calls?",
+   "How many requests are affected (all, a percentage, intermittent), and is this production?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nThe `duration_in_traffic` field is not returned in your Google Directions API response because the conditions required to include it are not met. Specifically:\n\n- The `departure_time` must be set to the current time or a future time. Setting it to a time in the past (such as yesterday 9am) disqualifies the request from receiving traffic-based duration estimates [3][4].\n- Additionally, the `traffic_model` parameter is not specified, but even if it were, the `departure_time` being in the past would still prevent the `duration_in_traffic` from being included [1][2].\n\nTo receive `duration_in_traffic`, ensure the `departure_time` is set to the current time or a future time, and that the `traffic_model` parameter is included if you want to specify the assumptions for traffic conditions.\n\nThings to check in your request:\n- relative date only (yesterday/today/this morning): ask for the absolute date and time\n\nTo move forward we need:\n- What exact error code or status do you receive, and can you paste the response body?\n- Can you share a few sample coordinates (lat,lng) that fail, and one that works?\n- Can you share a few request IDs or trace IDs from failing calls?\n- How many requests are affected (all, a percentage, intermittent), and is this production?\n\nSources:\n[1] Google Maps Platform - https://developers.google.com/maps/documentation/directions/get-directions\n[2] Google Maps Platform - https://developers.google.com/maps/documentation/distance-matrix/distance-matrix\n[3] Google Maps Platform - https://developers.google.com/maps/documentation/directions/get-directions\n[4] Google Maps Platform - https://developers.google.com/maps/documentation/distance-matrix/distance-matrix\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case 4416bb30d1 (support / data_quality, urgency normal)\nCustomer: unknown | Provider/API: Google Maps Platform / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\nFindings:\n- relative date only (yesterday/today/this morning): ask for the absolute date and time\n- Knowledge answer: The `duration_in_traffic` field is not returned in your Google Directions API response because the conditions required to include it are not met. Specifically:\n\n- The `departure_time` must be set to the current time or a future time. Setting it to a time in the past (such as yesterday 9am) disqualif\nOpen questions: error_response, coordinates, request_ids, impact\nNext action: not set",
+  "sources": [
+   "https://developers.google.com/maps/documentation/directions/get-directions",
+   "https://developers.google.com/maps/documentation/distance-matrix/distance-matrix"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-051": {
+  "id": "GT-LBS-DIR-051",
+  "intent": "error_resolution",
+  "message": "Our Google Directions calls in production started returning OVER_QUERY_LIMIT for every request for a few minutes at peak. What's happening?",
+  "route": "agent",
+  "why": "support incident category outage",
+  "category": "outage",
+  "urgency": "high",
+  "questions": [
+   "When did this start (date and time with timezone), and is it still happening?",
+   "Can you share a few request IDs or trace IDs from failing calls?",
+   "Did anything change just before this started (deployment, key restriction, plan or billing change)?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nWhen your Google Directions calls start returning `OVER_QUERY_LIMIT` errors during peak times, it typically indicates that you've exceeded the request rate (QPM) limits for the Directions API. If your application sends more requests than this limit within a minute, the API will return the `OVER_QUERY_LIMIT` status code, and it may temporarily block your access if the issue persists.\n\nAdditionally, if you're using more than 10 intermediate waypoints in a single request, these are billed at a higher rate, which could contribute to exceeding your quota [2]. During peak times, the volume of requests may surpass the allowed limit, leading to the `OVER_QUERY_LIMIT` error.\n\nTo resolve this, consider the following:\n- Optimize your application to reduce the number of requests or the number of waypoints per request.\n- Increase your quota limit through the Google Cloud Console if needed.\n- Ensure that your application is not making redundant or unnecessary requests.\n\nTo move forward we need:\n- When did this start (date and time with timezone), and is it still happening?\n- Can you share a few request IDs or trace IDs from failing calls?\n- Did anything change just before this started (deployment, key restriction, plan or billing change)?\n\nSources:\n[2] Google Maps Platform - https://developers.google.com/maps/documentation/routes/usage-and-billing\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 1 revision(s); ",
+  "handoff": "Handoff for case 781ac3dd8b (support / outage, urgency high)\nCustomer: unknown | Provider/API: Google Maps Platform / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\nFindings:\n- Knowledge answer: When your Google Directions calls start returning `OVER_QUERY_LIMIT` errors during peak times, it typically indicates that you've exceeded the request rate (QPM) limits for the Directions API. According to the verified limits, the Directions API has a quota limit of 3,000 requests per minute for Com\nOpen questions: timestamp, request_ids, recent_change\nNext action: not set",
+  "sources": [
+   "https://developers.google.com/maps/documentation/routes/usage-and-billing"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-121": {
+  "id": "GT-LBS-DIR-121",
+  "intent": "billing_question",
+  "message": "We're on Ola's prepaid credits and our balance hit zero on 5 September 2026. Will Directions stop?",
+  "route": "agent",
+  "why": "support incident category billing",
+  "category": "billing",
+  "urgency": "normal",
+  "questions": [
+   "Did anything change just before this started (deployment, key restriction, plan or billing change)?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nNo, Directions will not stop if your balance hits zero on 5 September 2026, because the grace period ends on 8 September 2026 [1][4]. During this grace period, the credit balance may become negative without service interruption. However, after 8 September 2026, if the balance is zero and usage is beyond the free tier allowance, Directions will stop.\n\nTo move forward we need:\n- Did anything change just before this started (deployment, key restriction, plan or billing change)?\n\nSources:\n[1] Ola Maps - https://maps.olakrutrim.com/pricing/update-2026\n[4] Ola Maps - https://maps.olakrutrim.com/pricing/update-2026\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case 410b3a8b87 (support / billing, urgency normal)\nCustomer: unknown | Provider/API: Ola Maps / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\nFindings:\n- Knowledge answer: No, Directions will not stop if your balance hits zero on 5 September 2026, because the grace period ends on 8 September 2026 [1][4]. During this grace period, the credit balance may become negative without service interruption. However, after 8 September 2026, if the balance is zero and usage is be\nOpen questions: recent_change\nNext action: not set",
+  "sources": [
+   "https://maps.olakrutrim.com/pricing/update-2026"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-048": {
+  "id": "GT-LBS-DIR-048",
+  "intent": "discovery_qualification",
+  "message": "Hi, we're an intercity bus aggregator and want a directions/routing API for route previews between cities. What do you recommend?",
+  "route": "agent",
+  "why": "sales discovery: qualification and capability matching",
+  "category": "discovery",
+  "urgency": "normal",
+  "questions": [
+   "Roughly how many requests (or sessions / matrix elements) do you expect per month, now and in 12 months?",
+   "Which cities or regions must be covered (India only, or other countries)?",
+   "Is there a monthly budget or price target we should stay within?",
+   "What is your target go-live or decision date?"
+  ],
+  "draft": "Hello,\n\nThanks for reaching out. Based on what you shared, here is how the options line up.\n\nFor an intercity bus aggregator needing a directions/routing API for route previews between cities, **Ola Maps** is the most suitable option based on the following considerations:\n\n1. **Waypoints Support**: Ola Maps' Directions API supports up to **25 waypoints** per request, which is ideal for multi-city route planning [2]. The Directions Basic API supports up to **10 waypoints**, which is less flexible for intercity routes [1].\n\n2. **Real-Time Traffic Insights**: Ola Maps' Directions API provides **real-time traffic congestion insights**, which is valuable for accurate route previews [2]. This is not available in the Directions Basic API [1].\n\n3. **Language and Route Preferences**: Ola Maps supports multiple languages (e.g., English, Hindi, Bengali) and allows specifying route preferences like `fastest` or `shortest` [2]. This is useful for catering to diverse user bases and optimizing routes.\n\n4. **No Per-Request Cost**: Ola Maps does not have a per-request pricing model for its Directions API, making it cost-effective for frequent route calculations.\n\n5. **No Usage Limits (for Public Server)**: While Ola Maps does not explicitly mention usage limits in the provided sources, it is recommended to check with the vendor for specific usage policies.\n\n### Comparison with Other Providers:\nIt also provides real-time traffic data but may be more expensive for high-volume use.\n- **Mapbox**: Supports up to 25 waypoints and offers real-time traffic data for certain profiles (e.g., `mapbox/driving-traffic`). However, it has a **per-request pricing model** and requires contacting sales for EV routing features [4][5].\n- **OSM Nominatim and OSRM**: These are free open-source tools but have **strict usage limits** (e.g., 1 request per second for Nominatim) and are not ideal for high-volume or commercial use.\n\n### Recommendation:\n**Ola Maps** is the best choice for your use case due to its **flexible waypoints support**, **real-time traffic insights**, and **cost-effectiveness**. For more detailed pricing or usage policies, contact Ola Maps directly.\n\nTo move forward we need:\n- Roughly how many requests (or sessions / matrix elements) do you expect per month, now and in 12 months?\n- Which cities or regions must be covered (India only, or other countries)?\n- Is there a monthly budget or price target we should stay within?\n- What is your target go-live or decision date?\n\nSources:\n[1] Ola Maps - https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml\n[2] Ola Maps - https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml\n[4] Mapbox - https://docs.mapbox.com/api/navigation/directions/\n[5] Mapbox - https://docs.mapbox.com/api/navigation/directions/\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 1 revision(s); ",
+  "handoff": "Handoff for case 41cef77c77 (sales / discovery, urgency normal)\nCustomer: unknown | Provider/API: None / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\n- use_case: aggregator\nFindings:\n- Knowledge answer: For an intercity bus aggregator needing a directions/routing API for route previews between cities, **Ola Maps** is the most suitable option based on the following considerations:\n\n1. **Waypoints Support**: Ola Maps' Directions API supports up to **25 waypoints** per request, which is ideal for mult\nOpen questions: volume, regions, budget, timeline\nNext action: not set",
+  "sources": [
+   "https://docs.mapbox.com/api/navigation/directions/",
+   "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-043": {
+  "id": "GT-LBS-DIR-043",
+  "intent": "licensing_fit",
+  "message": "If we self-host OSRM on OpenStreetMap data for routing, what licensing obligations do we have?",
+  "route": "agent",
+  "why": "sales licensing: qualification and capability matching",
+  "category": "licensing",
+  "urgency": "normal",
+  "questions": [
+   "What are you building and who uses it (for example rider ETAs at checkout, fleet dispatch, address search)?",
+   "Roughly how many requests (or sessions / matrix elements) do you expect per month, now and in 12 months?",
+   "Which cities or regions must be covered (India only, or other countries)?",
+   "Is there a monthly budget or price target we should stay within?"
+  ],
+  "draft": "Hello,\n\nThanks for reaching out. Based on what you shared, here is how the options line up.\n\nThe documented capabilities relevant to your requirements are below, with sources. We only state what the documentation shows; items marked [GAP] are not documented in the sources we hold and need vendor confirmation.\n\nSelf-hosting / open-source option:\n- OSRM: OSRM is open source and can be run as the osrm-routed HTTP server or used as the libosrm C++ library. (https://project-osrm.org/docs/v5.24.0/api/)\n- OSM Nominatim: For larger needs than the public server allows, you can install your own Nominatim instance. (https://operations.osmfoundation.org/policies/nominatim/)\n\nTo move forward we need:\n- What are you building and who uses it (for example rider ETAs at checkout, fleet dispatch, address search)?\n- Roughly how many requests (or sessions / matrix elements) do you expect per month, now and in 12 months?\n- Which cities or regions must be covered (India only, or other countries)?\n- Is there a monthly budget or price target we should stay within?\n\nSources:\n[1] OSRM - https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case 23cdd133ae (sales / licensing, urgency normal)\nCustomer: unknown | Provider/API: OSRM / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\n- constraints: self-host\nFindings:\n- Knowledge answer: If you self-host OSRM on OpenStreetMap data for routing, you have the following licensing obligations:\n\n1. **OpenStreetMap Data License**: The OpenStreetMap data is licensed under the Open Database License (ODbL).\n2. **OSRM License**: OSRM itself is open-source software, released under the GNU Gener\nOpen questions: use_case, volume, regions, budget\nNext action: not set",
+  "sources": [
+   "https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DM-066": {
+  "id": "GT-LBS-DM-066",
+  "intent": "performance_question",
+  "message": "Our 7×7 Ola Distance Matrix calls are slower than 2×2 ones. Is that a problem on Ola's side?",
+  "route": "agent",
+  "why": "required information missing: endpoint_request",
+  "category": "performance",
+  "urgency": "normal",
+  "questions": [
+   "Can you share the request you send (endpoint and parameters, with the API key removed)?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nThe slower performance of your 7×7 Ola Distance Matrix calls compared to 2×2 ones is not necessarily a problem on Ola's side. The API is optimized for batch distance/ETA lookups, but response latency may increase with larger matrices [1]. However, larger matrices may take longer to process due to the increased computational complexity involved in calculating distances and estimated travel times for more origin-destination pairs. This is a known behavior of such APIs and is not indicative of an error or issue on Ola's side.\n\nTo move forward we need:\n- Can you share the request you send (endpoint and parameters, with the API key removed)?\n\nSources:\n[1] Ola Maps - https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 1 revision(s); ",
+  "handoff": "Handoff for case 9594238cd3 (support / performance, urgency normal)\nCustomer: unknown | Provider/API: Ola Maps / Distance Matrix | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Distance Matrix\nFindings:\n- Knowledge answer: The slower performance of your 7×7 Ola Distance Matrix calls compared to 2×2 ones is not necessarily a problem on Ola's side. The API is optimized for batch distance/ETA lookups, but response latency may increase with larger matrices [1]. The maximum allowed pairs per request is 50, and a 7×7 matrix\nOpen questions: endpoint_request\nNext action: not set",
+  "sources": [
+   "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-085": {
+  "id": "GT-LBS-DIR-085",
+  "intent": "contract_request",
+  "message": "We've committed to 40M Ola Directions calls a month and want negotiated pricing and an SLA. Who do we talk to?",
+  "route": "human",
+  "why": "needs human judgement (contract_request)",
+  "category": "contract",
+  "urgency": "normal",
+  "questions": [
+   "What are you building and who uses it (for example rider ETAs at checkout, fleet dispatch, address search)?",
+   "Which cities or regions must be covered (India only, or other countries)?",
+   "Is there a monthly budget or price target we should stay within?",
+   "What is your target go-live or decision date?"
+  ],
+  "draft": "(no customer draft: a person decides)",
+  "critic": "(not applicable on this route)",
+  "handoff": "Handoff for case 6544b025b6 (sales / contract, urgency normal)\nCustomer: unknown | Provider/API: Ola Maps / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\n- constraints: committed\n- volume: volume stated\nFindings:\nOpen questions: use_case, regions, budget, timeline\nNext action: not set\nGAPS: no findings recorded yet",
+  "sources": [],
+  "model_calls": 0
+ },
+ "GT-LBS-DIR-086": {
+  "id": "GT-LBS-DIR-086",
+  "intent": "security_incident",
+  "message": "A developer accidentally pushed our Ola Maps API key to a public GitHub repo. What should we do right now?",
+  "route": "human",
+  "why": "needs human judgement (security_incident)",
+  "category": "security",
+  "urgency": "normal",
+  "questions": [
+   "How many requests are affected (all, a percentage, intermittent), and is this production?"
+  ],
+  "draft": "(no customer draft: a person decides)",
+  "critic": "(not applicable on this route)",
+  "handoff": "Handoff for case 76faee7df8 (support / security, urgency normal)\nCustomer: unknown | Provider/API: Ola Maps / None | Owner: unassigned | Status: awaiting_approval\nFindings:\nOpen questions: impact\nNext action: not set\nGAPS: no findings recorded yet",
+  "sources": [],
+  "model_calls": 0
+ },
+ "GT-LBS-DIR-005": {
+  "id": "GT-LBS-DIR-005",
+  "intent": "pricing_comparison",
+  "message": "We're a Bengaluru quick-commerce startup and expect about 150,000 route (directions) requests a month, all in India. Which routing APIs could we use, and what would each cost per month in rupees?",
+  "route": "rag",
+  "why": "priced question with a volume: calculator and documentation",
+  "category": null,
+  "urgency": null,
+  "questions": [],
+  "draft": "Lowest verified list-price total: Ola Maps | Directions Basic (no traffic) (INR 4,950.00); highest: Google Maps Platform | Directions (traffic-aware, Pro) (INR 32,478.37).\n\nPrice summary (calculated from the verified list prices; FX 94.1402 INR/USD, 2026-11-06):\n- Ola Maps | Directions: INR 9,950.00\n- Ola Maps | Directions Basic (no traffic): INR 4,950.00\n- Google Maps Platform | Directions (traffic-aware, Pro): USD 345.00 (about INR 32,478.37 at 94.1402/USD)\n- Google Maps Platform | Directions (no traffic, Essentials): USD 120.00 (about INR 11,296.82 at 94.1402/USD)\n- Mapbox | Directions: USD 100.00 (about INR 9,414.02 at 94.1402/USD)\n- HERE directions: list price could not be verified; ask the vendor for a quote.\n- OSM Nominatim directions: free open-source software, no per-request price (the public server is rate-limited; heavy use means self-hosting).\nList-price sources: [7] [1] [4].\n\nOla Maps: since 1 Sept 2026, self-service usage draws on prepaid Ola Maps credits (contract customers are exempt).\nGoogle: India price list; usage is aggregated across all projects on the billing account. Prices are list prices.\nMapbox: global list pricing.",
+  "critic": "(not applicable on this route)",
+  "handoff": "(none: answered directly)",
+  "sources": [
+   "https://developers.google.com/maps/billing-and-pricing/pricing-india",
+   "https://maps.olakrutrim.com/pricing/details",
+   "https://www.mapbox.com/pricing"
+  ],
+  "model_calls": 2
+ },
+ "GT-LBS-DIR-044": {
+  "id": "GT-LBS-DIR-044",
+  "intent": "billing_question",
+  "message": "We're on Ola Maps self-service. Our credit balance went negative on 5 September. Will routing calls stop?",
+  "route": "rag",
+  "why": "no case signals: answer from documentation",
+  "category": null,
+  "urgency": null,
+  "questions": [],
+  "draft": "No, routing calls will not stop if your credit balance went negative on 5 September 2026, as the grace period ends on 8 September 2026. During this grace period, the credit balance may become negative without service interruption [1][3]. After 8 September 2026, if the credit balance reaches zero and usage is beyond the free tier allowance, service may be affected. Ensure you add credits before 8 September 2026 to maintain uninterrupted service.",
+  "critic": "(not applicable on this route)",
+  "handoff": "(none: answered directly)",
+  "sources": [
+   "https://maps.olakrutrim.com/pricing/update-2026"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-041": {
+  "id": "GT-LBS-DIR-041",
+  "intent": "parameter_question",
+  "message": "How do we get alternative routes from a directions API so the rider can pick one?",
+  "route": "rag",
+  "why": "how-to question: answer from documentation",
+  "category": null,
+  "urgency": null,
+  "questions": [],
+  "draft": "To get alternative routes from a directions API, you can use the `alternatives` parameter, which is supported by several providers:\n\n- **Mapbox**: Set `alternatives=true` in your request. This parameter is available for the `mapbox/driving-traffic`, `mapbox/driving`, `mapbox/cycling`, and `mapbox/walking` profiles. However, the availability of alternative routes depends on the specific route and may not always be provided [1][3].\n- **Google Maps Platform**: Set `alternatives=true` in your request. This is available for requests without intermediate waypoints. Providing route alternatives may increase the response time from the server [2][4].\n\nFor both providers, the number of alternative routes returned is typically limited (up to two alternatives), and the availability of alternatives depends on the specific route and conditions [1][2][3]. \n\nIf you need more detailed information or have specific requirements, consult the respective API documentation for further guidance.",
+  "critic": "(not applicable on this route)",
+  "handoff": "(none: answered directly)",
+  "sources": [
+   "https://developers.google.com/maps/documentation/directions/get-directions",
+   "https://docs.mapbox.com/api/navigation/directions/",
+   "https://stackoverflow.com/questions/17222386",
+   "https://stackoverflow.com/questions/50659938"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-001": {
+  "id": "GT-LBS-DIR-001",
+  "intent": "pricing_comparison",
+  "message": "We are a Bengaluru delivery startup. We expect about 2,000,000 Directions requests a month in India. What would Google Directions vs Ola Maps Directions cost us per month?",
+  "route": "rag",
+  "why": "priced question with a volume: calculator and documentation",
+  "category": null,
+  "urgency": null,
+  "questions": [],
+  "draft": "Lowest verified list-price total: Ola Maps | Directions Basic (no traffic) (INR 188,100.00); highest: Google Maps Platform | Directions (traffic-aware, Pro) (INR 554,956.48).\n\nPrice summary (calculated from the verified list prices; FX 94.1402 INR/USD, 2026-11-06):\n- Google Maps Platform | Directions (traffic-aware, Pro): USD 5,895.00 (about INR 554,956.48 at 94.1402/USD)\n- Google Maps Platform | Directions (no traffic, Essentials): USD 2,895.00 (about INR 272,535.88 at 94.1402/USD)\n- Ola Maps | Directions: INR 378,100.00\n- Ola Maps | Directions Basic (no traffic): INR 188,100.00\nList-price sources: [2] [4].\n\nOla Maps: since 1 Sept 2026, self-service usage draws on prepaid Ola Maps credits (contract customers are exempt).\nGoogle: India price list; usage is aggregated across all projects on the billing account. Prices are list prices.",
+  "critic": "(not applicable on this route)",
+  "handoff": "(none: answered directly)",
+  "sources": [
+   "https://developers.google.com/maps/billing-and-pricing/pricing-india",
+   "https://maps.olakrutrim.com/pricing/details"
+  ],
+  "model_calls": 2
+ },
+ "GT-LBS-DIR-113": {
+  "id": "GT-LBS-DIR-113",
+  "intent": "capability_matching",
+  "message": "Which providers can optimize the stop order for a 20-stop delivery route, and what limits apply?",
+  "route": "rag",
+  "why": "generic question without customer context: answer from documentation",
+  "category": null,
+  "urgency": null,
+  "questions": [],
+  "draft": "Ola Maps also supports up to 25 waypoints per request for its Directions API [6]. Google Maps does not support optimizing the stop order for a 20-stop delivery route, as it only allows up to 23 waypoints per request and does not support the Vehicle Routing Problem with pickup and delivery [3][2]. \n\nFor Mapbox, the pricing for the Optimization API is as follows: up to 100,000 requests per month are free, 100,001–500,000 requests per month cost $2.00 per 1,000 requests, 500,001–1,000,000 requests per month cost $1.60 per 1,000 requests, and 1,000,001+ requests per month cost $1.20 per 1,000 requests [1]. \n\nFor Ola Maps, the pricing is not provided in the sources, so a quote should be requested from the vendor. \n\nOSM Nominatim and OSRM are free open-source software, but they have usage limits.\n\n(Some statements could not be verified against the cited sources and were removed.)",
+  "critic": "(not applicable on this route)",
+  "handoff": "(none: answered directly)",
+  "sources": [
+   "https://maps.olakrutrim.com/",
+   "https://stackoverflow.com/questions/39726945",
+   "https://stackoverflow.com/questions/47393315",
+   "https://www.mapbox.com/pricing"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-065": {
+  "id": "GT-LBS-DIR-065",
+  "intent": "parameter_troubleshooting",
+  "message": "We send traffic_metadata=true to Ola Directions but travel_advisory never appears in the response.",
+  "route": "rag",
+  "why": "support question with the needed details: answer from documentation",
+  "category": null,
+  "urgency": null,
+  "questions": [],
+  "draft": "When you send `traffic_metadata=true` to the Ola Directions API, the `travel_advisory` field should appear in the response **only if** the `overview` parameter is also set to `\"full\"` [1]. If `travel_advisory` is not appearing, it likely means that the `overview` parameter was not set to `\"full\"` in your request. \n\nEnsure that you include both `traffic_metadata=true` and `overview=full` in your request to receive traffic congestion metadata in the response.",
+  "critic": "(not applicable on this route)",
+  "handoff": "(none: answered directly)",
+  "sources": [
+   "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-064": {
+  "id": "GT-LBS-DIR-064",
+  "intent": "error_resolution",
+  "message": "Ola Directions returns 400 with reason 'Invalid/missing origin'. We send origin=77.5946,12.9716.",
+  "route": "rag",
+  "why": "support question with the needed details: answer from documentation",
+  "category": null,
+  "urgency": null,
+  "questions": [],
+  "draft": "I found sources on this topic, but I couldn't verify a specific answer from them, so I won't guess. Please check the sources linked below, rephrase the question, or ask about pricing, limits, errors or policies for the supported providers.",
+  "critic": "(not applicable on this route)",
+  "handoff": "(none: answered directly)",
+  "sources": [
+   "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DM-100": {
+  "id": "GT-LBS-DM-100",
+  "intent": "error_resolution",
+  "message": "Google Distance Matrix returns ZERO_RESULTS for origins=-77.18,38.93.",
+  "route": "rag",
+  "why": "support question with the needed details: answer from documentation",
+  "category": null,
+  "urgency": null,
+  "questions": [],
+  "draft": "The Google Distance Matrix API returns `ZERO_RESULTS` when there are no valid results for the specified origins or destinations. In your case, the origin coordinates `-77.18,38.93` might not be valid or recognized by the API, or there could be no available routes or data for that specific location. \n\nFor accurate results, ensure that the coordinates are valid and correctly formatted, and consider using place IDs or addresses instead of raw coordinates if the issue persists. Additionally, check if the location is within a supported region and if there are any regional restrictions or limitations [2].\n\n(Some statements could not be verified against the cited sources and were removed.)",
+  "critic": "(not applicable on this route)",
+  "handoff": "(none: answered directly)",
+  "sources": [
+   "https://developers.google.com/maps/documentation/distance-matrix/distance-matrix"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-059": {
+  "id": "GT-LBS-DIR-059",
+  "intent": "coverage_question",
+  "message": "Google transit directions within Mumbai return results, but Indian Railways long-distance trains never show up. Is that expected?",
+  "route": "agent",
+  "why": "required information missing: error_response, endpoint_request",
+  "category": "troubleshooting",
+  "urgency": "normal",
+  "questions": [
+   "What exact error code or status do you receive, and can you paste the response body?",
+   "Can you share the request you send (endpoint and parameters, with the API key removed)?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nYes, this is expected. The Routes API supports all Google Transit partners except the Indian Railway Catering and Tourism Corporation (IRCTC) and those in Japan [1]. Therefore, Indian Railways long-distance trains, which are managed by IRCTC, are not included in transit directions.\n\nTo move forward we need:\n- What exact error code or status do you receive, and can you paste the response body?\n- Can you share the request you send (endpoint and parameters, with the API key removed)?\n\nSources:\n[1] Google Maps Platform - https://developers.google.com/maps/faq\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case 3a0b894743 (support / troubleshooting, urgency normal)\nCustomer: unknown | Provider/API: Google Maps Platform / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\n- regions: Mumbai\nFindings:\n- Knowledge answer: Yes, this is expected. The Routes API supports all Google Transit partners except the Indian Railway Catering and Tourism Corporation (IRCTC) and those in Japan [1]. Therefore, Indian Railways long-distance trains, which are managed by IRCTC, are not included in transit directions.\nOpen questions: error_response, endpoint_request\nNext action: not set",
+  "sources": [
+   "https://developers.google.com/maps/faq"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-055": {
+  "id": "GT-LBS-DIR-055",
+  "intent": "error_resolution",
+  "message": "Our Google Directions request with a via: waypoint returns ZERO_RESULTS, but without 'via:' the route works.",
+  "route": "agent",
+  "why": "required information missing: timestamp, endpoint_request",
+  "category": "coverage",
+  "urgency": "normal",
+  "questions": [
+   "When did this start (date and time with timezone), and is it still happening?",
+   "Can you share the request you send (endpoint and parameters, with the API key removed)?",
+   "Can you share a few sample coordinates (lat,lng) that fail, and one that works?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nThe issue with your Google Directions request returning `ZERO_RESULTS` when using a `via:` waypoint is likely due to the strict interpretation of the waypoint when using the `via:` prefix, as noted in [1]. This strict interpretation may result in severe detours or even `ZERO_RESULTS` if the Directions API cannot find a valid route through the specified point.\n\nWhen you use `via:` waypoints, the Directions API treats them as mandatory points that the route must pass through without stopping, which can make the routing more complex and less flexible. This can lead to situations where the API cannot find a valid route, especially if the waypoint is in a location that is not easily accessible or if the route requires maneuvers that are not allowed (such as U-turns), as mentioned in [6].\n\nTo resolve this, consider the following:\n- Avoid using `via:` if you do not need the route to pass through the waypoint without stopping.\n- If you must use `via:`, ensure the waypoint is in a location that is accessible and does not require maneuvers that are not supported by the API.\n- Test the route with slight adjustments to the waypoint to see if it resolves the issue.\n\nFor more details on waypoint handling and routing, refer to [1] and [5].\n\nTo move forward we need:\n- When did this start (date and time with timezone), and is it still happening?\n- Can you share the request you send (endpoint and parameters, with the API key removed)?\n- Can you share a few sample coordinates (lat,lng) that fail, and one that works?\n\nSources:\n[1] Google Maps Platform - https://developers.google.com/maps/documentation/directions/get-directions\n[5] Google Maps Platform - https://developers.google.com/maps/documentation/directions/get-directions\n[6] Stack Overflow - https://stackoverflow.com/questions/78234081\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case b48cacaa83 (support / coverage, urgency normal)\nCustomer: unknown | Provider/API: Google Maps Platform / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\nFindings:\n- Knowledge answer: The issue with your Google Directions request returning `ZERO_RESULTS` when using a `via:` waypoint is likely due to the strict interpretation of the waypoint when using the `via:` prefix, as noted in [1]. This strict interpretation may result in severe detours or even `ZERO_RESULTS` if the Directio\nOpen questions: timestamp, endpoint_request, coordinates\nNext action: not set",
+  "sources": [
+   "https://developers.google.com/maps/documentation/directions/get-directions",
+   "https://stackoverflow.com/questions/78234081"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-088": {
+  "id": "GT-LBS-DIR-088",
+  "intent": "error_resolution",
+  "message": "Looping over 15 markers and calling Google Directions for each pair quickly gives OVER_QUERY_LIMIT. How should we fix it?",
+  "route": "agent",
+  "why": "support incident category rate_limit",
+  "category": "rate_limit",
+  "urgency": "normal",
+  "questions": [
+   "When did this start (date and time with timezone), and is it still happening?",
+   "Can you share a few request IDs or trace IDs from failing calls?",
+   "How many requests are affected (all, a percentage, intermittent), and is this production?",
+   "Did anything change just before this started (deployment, key restriction, plan or billing change)?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\n1. To avoid hitting the query limit, reduce the number of waypoints per request or batch them appropriately.\n\n2. If you exceed this, you'll receive an `OVER_QUERY_LIMIT` error. Implement a delay between requests or batch your requests to stay within the limit.\n\n3. **Use the Directions Service efficiently**: If you're using the Directions Service, consider using the `DirectionsRenderer` to display routes and avoid making multiple separate requests for each pair of markers. This can help reduce the number of API calls.\n\n4. **Optimize your application**: Review your application's usage and optimize it to use Google Maps Platform products more efficiently. This can include reducing redundant requests or using caching where appropriate.\n\n5. **Increase your quota**: If your application requires a higher number of requests, consider requesting to increase your quota through the Google Cloud Console.\n\nBy following these steps, you can avoid the `OVER_QUERY_LIMIT` error and ensure your application uses the Google Maps Platform services efficiently.\n\nTo move forward we need:\n- When did this start (date and time with timezone), and is it still happening?\n- Can you share a few request IDs or trace IDs from failing calls?\n- How many requests are affected (all, a percentage, intermittent), and is this production?\n- Did anything change just before this started (deployment, key restriction, plan or billing change)?\n\nSources:\n[3] Google Maps Platform - https://developers.google.com/maps/documentation/routes/usage-and-billing\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 1 revision(s); ",
+  "handoff": "Handoff for case 994f1b7316 (support / rate_limit, urgency normal)\nCustomer: unknown | Provider/API: Google Maps Platform / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\nFindings:\n- Knowledge answer: To fix the `OVER_QUERY_LIMIT` error when looping over 15 markers and calling Google Directions for each pair, you should:\n\n1. **Limit the number of waypoints per request**: Google Routes API allows a maximum of 25 waypoints per request, but more than 10 intermediate waypoints will bill you at the Pr\nOpen questions: timestamp, request_ids, impact, recent_change\nNext action: not set",
+  "sources": [
+   "https://developers.google.com/maps/documentation/routes/usage-and-billing"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-108": {
+  "id": "GT-LBS-DIR-108",
+  "intent": "error_resolution",
+  "message": "Our Google Directions request with departure_time set to yesterday fails with INVALID_REQUEST. Can we get historical traffic durations?",
+  "route": "agent",
+  "why": "required information missing: endpoint_request",
+  "category": "invalid_request",
+  "urgency": "normal",
+  "questions": [
+   "Can you share the request you send (endpoint and parameters, with the API key removed)?",
+   "Can you share a few sample coordinates (lat,lng) that fail, and one that works?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nNo, you cannot get historical traffic durations with the Google Directions API (Legacy) when using a departure_time set to a date in the past. The departure_time parameter must be set to the current time (now) or a future time. It cannot be in the past [4][5]. \n\nAdditionally, the traffic_model parameter is only applicable when the request includes a valid departure_time, and it affects the duration_in_traffic field based on live and historical traffic conditions [1][3]. Since your request uses a departure_time set to yesterday (a past date), it is invalid, and the API does not support retrieving historical traffic durations for past departure times. \n\nFor historical traffic data, you would need to use a different approach or consult the Google Maps Platform documentation for alternative methods.\n\nThings to check in your request:\n- relative date only (yesterday/today/this morning): ask for the absolute date and time\n\nTo move forward we need:\n- Can you share the request you send (endpoint and parameters, with the API key removed)?\n- Can you share a few sample coordinates (lat,lng) that fail, and one that works?\n\nSources:\n[1] Google Maps Platform - https://developers.google.com/maps/documentation/directions/get-directions\n[3] Google Maps Platform - https://developers.google.com/maps/documentation/distance-matrix/distance-matrix\n[4] Google Maps Platform - https://developers.google.com/maps/documentation/distance-matrix/distance-matrix\n[5] Google Maps Platform - https://developers.google.com/maps/documentation/directions/get-directions\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case 4ff11193ce (support / invalid_request, urgency normal)\nCustomer: unknown | Provider/API: Google Maps Platform / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\nFindings:\n- relative date only (yesterday/today/this morning): ask for the absolute date and time\n- Knowledge answer: No, you cannot get historical traffic durations with the Google Directions API (Legacy) when using a departure_time set to a date in the past. The departure_time parameter must be set to the current time (now) or a future time. It cannot be in the past [4][5]. \n\nAdditionally, the traffic_model param\nOpen questions: endpoint_request, coordinates\nNext action: not set",
+  "sources": [
+   "https://developers.google.com/maps/documentation/directions/get-directions",
+   "https://developers.google.com/maps/documentation/distance-matrix/distance-matrix"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-094": {
+  "id": "GT-LBS-DIR-094",
+  "intent": "error_resolution",
+  "message": "Our Android app gets REQUEST_DENIED from the Google Directions web service even though Maps renders fine.",
+  "route": "agent",
+  "why": "support incident category auth",
+  "category": "auth",
+  "urgency": "normal",
+  "questions": [
+   "When did this start (date and time with timezone), and is it still happening?",
+   "Can you share the request you send (endpoint and parameters, with the API key removed)?",
+   "Did anything change just before this started (deployment, key restriction, plan or billing change)?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nThe `REQUEST_DENIED` error from the Google Directions web service typically indicates an issue with API key configuration or restrictions. Here are the key reasons and solutions:\n\n1. **Incorrect API Key Restrictions**: If your API key is restricted to HTTP referers, it cannot be used with the web service APIs. Switch your key restriction type from an HTTP referer restriction to an IP address restriction [1].\n\n2. **Missing or Incorrect API Key**: Ensure that the API key used in your Android app is correctly configured and authorized for the Directions API. Check that the key is not restricted to specific websites or IP addresses that do not match your app's environment [1][4].\n\n3. **Billing and Project Setup**: Verify that billing is enabled for your Google Cloud project and that the Directions API is enabled for your project. Without billing, you may receive a `REQUEST_DENIED` error [5].\n\n4. **SHA-1 Fingerprint**: If you are using Android application restrictions, ensure the correct SHA-1 fingerprint of your signing certificate is added to the API key restrictions [2].\n\n5. **Legacy Services**: If you are using a deprecated version of the Places SDK for Android, update to the latest version as the older version has been turned off [5].\n\nFor a detailed troubleshooting guide, refer to the [Google Maps Platform FAQ](https://developers.google.com/maps/faq) and [API Key Best Practices](https://developers.google.com/maps/api-security-best-practices).\n\nTo move forward we need:\n- When did this start (date and time with timezone), and is it still happening?\n- Can you share the request you send (endpoint and parameters, with the API key removed)?\n- Did anything change just before this started (deployment, key restriction, plan or billing change)?\n\nSources:\n[1] Google Maps Platform - https://developers.google.com/maps/faq\n[2] Google Maps Platform - https://developers.google.com/maps/api-security-best-practices\n[4] Google Maps Platform - https://developers.google.com/maps/api-security-best-practices\n[5] Google Maps Platform - https://developers.google.com/maps/faq\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case d924c643f3 (support / auth, urgency normal)\nCustomer: unknown | Provider/API: Google Maps Platform / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\n- use_case: app\nFindings:\n- Knowledge answer: The `REQUEST_DENIED` error from the Google Directions web service typically indicates an issue with API key configuration or restrictions. Here are the key reasons and solutions:\n\n1. **Incorrect API Key Restrictions**: If your API key is restricted to HTTP referers, it cannot be used with the web se\nOpen questions: timestamp, endpoint_request, recent_change\nNext action: not set",
+  "sources": [
+   "https://developers.google.com/maps/api-security-best-practices",
+   "https://developers.google.com/maps/faq"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-036": {
+  "id": "GT-LBS-DIR-036",
+  "intent": "capability_fit",
+  "message": "Does Ola Maps Directions support auto-rickshaw routing for our three-wheeler fleet?",
+  "route": "agent",
+  "why": "sales capability_match: qualification and capability matching",
+  "category": "capability_match",
+  "urgency": "low",
+  "questions": [
+   "Roughly how many requests (or sessions / matrix elements) do you expect per month, now and in 12 months?",
+   "Which cities or regions must be covered (India only, or other countries)?",
+   "Is there a monthly budget or price target we should stay within?",
+   "What is your target go-live or decision date?"
+  ],
+  "draft": "Hello,\n\nThanks for reaching out. Based on what you shared, here is how the options line up.\n\nOla Maps Directions does not explicitly support auto-rickshaw routing for three-wheeler fleets based on the provided sources [1][3], and there is no mention of specific vehicle type support in the API parameters or features [3]. The API parameters include travel modes like `driving`, `walking`, `bike`, or `auto`, but none specifically reference auto-rickshaw or three-wheeler routing. Therefore, it is unclear if this functionality is available. For precise details, you should consult Ola Maps directly.\n\nTo move forward we need:\n- Roughly how many requests (or sessions / matrix elements) do you expect per month, now and in 12 months?\n- Which cities or regions must be covered (India only, or other countries)?\n- Is there a monthly budget or price target we should stay within?\n- What is your target go-live or decision date?\n\nSources:\n[1] Ola Maps - https://maps.olakrutrim.com/\n[3] Ola Maps - https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case 4905792f6f (sales / capability_match, urgency low)\nCustomer: unknown | Provider/API: Ola Maps / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\n- use_case: fleet\nFindings:\n- Knowledge answer: Ola Maps Directions does not explicitly support auto-rickshaw routing for three-wheeler fleets based on the provided sources [1][3], and there is no mention of specific vehicle type support in the API parameters or features [3]. The API parameters include travel modes like `driving`, `walking`, `bik\nOpen questions: volume, regions, budget, timeline\nNext action: not set",
+  "sources": [
+   "https://maps.olakrutrim.com/",
+   "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-063": {
+  "id": "GT-LBS-DIR-063",
+  "intent": "accuracy_question",
+  "message": "Our Google Directions start point snaps onto the wrong side of a divided road when we send raw lat/lng. How can we improve it?",
+  "route": "agent",
+  "why": "support incident category data_quality",
+  "category": "data_quality",
+  "urgency": "normal",
+  "questions": [
+   "What exact error code or status do you receive, and can you paste the response body?",
+   "When did this start (date and time with timezone), and is it still happening?",
+   "Can you share the request you send (endpoint and parameters, with the API key removed)?",
+   "Can you share a few sample coordinates (lat,lng) that fail, and one that works?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nTo improve the accuracy of your Google Directions start point when using raw lat/lng coordinates, use a **place ID** instead. Place IDs provide uniquely explicit identifiers like a lat/lng value pair and offer geocoding benefits for routing, such as access points and traffic variables. They do not require the service to perform a search or intermediate request for place details, which improves performance and accuracy [4]. \n\nUsing place IDs ensures that the start point is more precisely snapped to the correct location, avoiding issues with divided roads or other ambiguous geographical features. You can retrieve place IDs from the Geocoding API or the Places API, including Place Autocomplete [4]. \n\nIf you must use coordinates, ensure that no space exists between the latitude and longitude values, and be aware that the point will snap to the nearest road, which may not be an access point to the property or the intended route [4]. \n\nFor further guidance on geocoding strategies, refer to the **Geocoding Strategies** document [3].\n\nTo move forward we need:\n- What exact error code or status do you receive, and can you paste the response body?\n- When did this start (date and time with timezone), and is it still happening?\n- Can you share the request you send (endpoint and parameters, with the API key removed)?\n- Can you share a few sample coordinates (lat,lng) that fail, and one that works?\n\nSources:\n[3] Google Maps Platform - https://developers.google.com/maps/faq\n[4] Google Maps Platform - https://developers.google.com/maps/documentation/directions/get-directions\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case cb0f2044de (support / data_quality, urgency normal)\nCustomer: unknown | Provider/API: Google Maps Platform / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\nFindings:\n- Knowledge answer: To improve the accuracy of your Google Directions start point when using raw lat/lng coordinates, use a **place ID** instead. Place IDs provide uniquely explicit identifiers like a lat/lng value pair and offer geocoding benefits for routing, such as access points and traffic variables. They do not r\nOpen questions: error_response, timestamp, endpoint_request, coordinates\nNext action: not set",
+  "sources": [
+   "https://developers.google.com/maps/documentation/directions/get-directions",
+   "https://developers.google.com/maps/faq"
+  ],
+  "model_calls": 3
+ },
+ "GT-LBS-DIR-071": {
+  "id": "GT-LBS-DIR-071",
+  "intent": "error_resolution",
+  "message": "Ola Directions returns 429 'Reached monthly/minute rate limits' during our morning dispatch spike. It's not an outage for us yet. What should we do?",
+  "route": "agent",
+  "why": "support incident category outage",
+  "category": "outage",
+  "urgency": "high",
+  "questions": [
+   "When did this start (date and time with timezone), and is it still happening?",
+   "Can you share a few request IDs or trace IDs from failing calls?",
+   "How many requests are affected (all, a percentage, intermittent), and is this production?",
+   "Did anything change just before this started (deployment, key restriction, plan or billing change)?"
+  ],
+  "draft": "Hello,\n\nThanks for the details. Here is what we found so far.\n\nWhen you encounter the 429 'Reached monthly/minute rate limits' error with Ola Directions during your morning dispatch spike, you should:\n\n1. **Try again later** to avoid exceeding the rate limit [1].\n2. **Contact maps-support@olakrutrim.com** for a free upgrade or custom plan to increase your rate limits and accommodate your usage spikes [1].\nIf your usage is consistently high, consider upgrading to a custom plan to avoid disruptions.\n\n(Some statements could not be verified against the cited sources and were removed.)\n\nTo move forward we need:\n- When did this start (date and time with timezone), and is it still happening?\n- Can you share a few request IDs or trace IDs from failing calls?\n- How many requests are affected (all, a percentage, intermittent), and is this production?\n- Did anything change just before this started (deployment, key restriction, plan or billing change)?\n\nSources:\n[1] Ola Maps - https://maps.olakrutrim.com/docs\n\nDRAFT: not sent. It becomes available to send only after an authorised approver approves it.",
+  "critic": "pass after 0 revision(s); ",
+  "handoff": "Handoff for case 47ece8f062 (support / outage, urgency high)\nCustomer: unknown | Provider/API: Ola Maps / Directions | Owner: unassigned | Status: awaiting_approval\nRequirements:\n- api_needs: Directions\n- use_case: dispatch\nFindings:\n- Knowledge answer: When you encounter the 429 'Reached monthly/minute rate limits' error with Ola Directions during your morning dispatch spike, you should:\n\n1. **Try again later** to avoid exceeding the rate limit [1].\n2. **Contact maps-support@olakrutrim.com** for a free upgrade or custom plan to increase your rate \nOpen questions: timestamp, request_ids, impact, recent_change\nNext action: not set",
+  "sources": [
+   "https://maps.olakrutrim.com/docs"
+  ],
+  "model_calls": 3
+ }
+}

@@ -1,0 +1,10 @@
+﻿CREATE TABLE IF NOT EXISTS traces (id TEXT PRIMARY KEY, ts TEXT, query TEXT, retrieved_json TEXT, tool_calls_json TEXT, model TEXT, tokens_in INT, tokens_out INT, cost_usd REAL, abstained INT, escalate INT, answer TEXT);
+CREATE TABLE IF NOT EXISTS eval_runs (id TEXT PRIMARY KEY, ts TEXT, config_json TEXT, split TEXT);
+CREATE TABLE IF NOT EXISTS eval_results (run_id TEXT, gt_id TEXT, answer TEXT, metrics_json TEXT, trace_id TEXT, PRIMARY KEY(run_id, gt_id));
+CREATE TABLE IF NOT EXISTS cases (id TEXT PRIMARY KEY, customer TEXT, status TEXT, owner TEXT, created_at TEXT, type TEXT, workflow TEXT, provider TEXT, api TEXT, category TEXT, urgency TEXT, next_action TEXT, state_json TEXT, updated_at TEXT);
+CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, case_id TEXT, role TEXT, content TEXT, ts TEXT);
+CREATE TABLE IF NOT EXISTS proposed_actions (id INTEGER PRIMARY KEY AUTOINCREMENT, case_id TEXT, type TEXT, payload_json TEXT, status TEXT DEFAULT 'pending', approver TEXT, created_at TEXT, decided_at TEXT, requested_by TEXT, decision_note TEXT, edited_payload_json TEXT, applied_at TEXT, applied_result TEXT);
+CREATE TABLE IF NOT EXISTS case_events (id INTEGER PRIMARY KEY AUTOINCREMENT, case_id TEXT, ts TEXT, actor TEXT, event TEXT, detail_json TEXT);
+CREATE TABLE IF NOT EXISTS trace_steps (id INTEGER PRIMARY KEY AUTOINCREMENT, trace_id TEXT, case_id TEXT, step TEXT, component TEXT, input_json TEXT, output_json TEXT, ms INT, ts TEXT);
+CREATE TABLE IF NOT EXISTS case_facts (case_id TEXT, key TEXT, value TEXT, source_message_id INTEGER, ts TEXT, PRIMARY KEY(case_id, key));
+CREATE TABLE IF NOT EXISTS case_tracker (case_id TEXT, field TEXT, value TEXT, approved_by TEXT, approved_at TEXT, source_action_id INTEGER, PRIMARY KEY(case_id, field));

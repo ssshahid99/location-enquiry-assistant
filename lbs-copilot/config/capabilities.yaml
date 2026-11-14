@@ -1,0 +1,395 @@
+# Capability library for requirement -> documented capability matching (project problem 8).
+# Every evidence entry carries a VERBATIM quote from a fetched vendor page; tests/test_capabilities.py fails if a quote is not found.
+# A provider with NO evidence entry is reported as "not documented in the fetched sources": that is a GAP to check with the vendor,
+# never a statement that the provider lacks the capability.
+# `match`: regexes (case-insensitive) that make a customer requirement relevant to this capability.
+capabilities:
+  - id: traffic_aware_routing
+    label: "Traffic-aware routing / ETAs"
+    match: ['traffic', 'real[- ]?time', 'live (eta|traffic)', 'peak hours?', 'congestion']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Directions accepts departure_time (driving) and returns duration_in_traffic that takes traffic conditions into account.",
+           url: "https://developers.google.com/maps/documentation/directions/get-directions",
+           quote: "You can specify the departure_time to receive a route and trip duration (response field: duration_in_traffic) that take traffic conditions into account"}
+      Mapbox:
+        - {statement: "The driving-traffic profile accounts for live traffic; typical (non-live) duration is returned separately as duration_typical.",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "When using the driving-traffic profile, this will be returned as a float indicating the duration of the route under typical conditions (not taking into account live traffic)"}
+      Ola Maps:
+        - {statement: "Directions can include traffic congestion metadata (traffic_metadata) in the response.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Include traffic congestion metadata in the response"}
+      HERE:
+        - {statement: "Routing and Matrix use live traffic or historical traffic patterns depending on departure time.",
+           url: "https://docs.here.com/routing/docs/matrix-v8-intro",
+           quote: "Depending on departure time, either live traffic or historical traffic patterns are used"}
+
+  - id: route_optimization
+    label: "Multi-stop route optimisation (stop ordering)"
+    match: ['optimi[sz]e', 'stop order', 'order of (the )?(delivery )?stops', 'sequenc', 'travelling salesman', 'traveling salesman', 'multi[- ]?stop']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Directions (Legacy) can reorder waypoints with waypoints=optimize:true.",
+           url: "https://developers.google.com/maps/documentation/directions/get-directions",
+           quote: "optimize the provided route by rearranging the waypoints in a more efficient order"}
+      Ola Maps:
+        - {statement: "The Route Optimizer API reorders a list of waypoints to minimise overall travel time.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Computes the most efficient route by reordering a list of waypoints to minimize overall travel time"}
+      Mapbox:
+        - {statement: "The Optimization API plans a multi-stop route with stops in the most efficient order.",
+           url: "https://www.mapbox.com/pricing",
+           quote: "Plan a multi-stop driving, bicycling, and walking route with stops in the most efficient order"}
+      OSRM:
+        - {statement: "The Trip service solves the Travelling Salesman Problem (approximation).",
+           url: "https://project-osrm.org/docs/v5.24.0/api/",
+           quote: "The trip plugin solves the Traveling Salesman Problem"}
+
+  - id: walking_cycling
+    label: "Walking and cycling directions"
+    match: ['walking', '\bwalk\b', 'cycling', 'bicycl', '\bbike\b', 'pedestrian']
+    evidence:
+      Ola Maps:
+        - {statement: "Directions mode accepts driving, walking, bike or auto.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Travel mode - driving, walking, bike, or auto"}
+      Google Maps Platform:
+        - {statement: "Directions supports walking and bicycling modes (where path data is available).",
+           url: "https://developers.google.com/maps/documentation/directions/get-directions",
+           quote: "walking requests walking directions or distance via pedestrian paths"}
+      Mapbox:
+        - {statement: "Directions has mapbox/walking and mapbox/cycling profiles.",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "Possible values are mapbox/driving-traffic , mapbox/driving , mapbox/walking , or mapbox/cycling"}
+      OSRM:
+        - {statement: "The public demo server runs car, foot and bike profiles (self-host for production).",
+           url: "https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server",
+           quote: "running worldwide car, foot and bike profiles"}
+
+  - id: autocomplete_country_restriction
+    label: "Restricting autocomplete / search results to a country"
+    match: ['restrict', 'limit (results )?to', 'filter', 'country', 'india only', 'only (in )?india']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Place Autocomplete can filter results to places within a specified country with includedRegionCodes.",
+           url: "https://developers.google.com/maps/documentation/places/web-service/legacy/autocomplete",
+           quote: "You can use the includedRegionCodes parameter to filter results to show only those places within a specified country"}
+      Mapbox:
+        - {statement: "Geocoding accepts a country parameter (ISO 3166 alpha-2 codes, comma separated).",
+           url: "https://docs.mapbox.com/api/search/geocoding/",
+           quote: "Permitted values are ISO 3166 alpha 2 country codes separated by commas"}
+      HERE:
+        - {statement: "Autocomplete can limit results to a country with in=countryCode:XXX.",
+           url: "https://docs.here.com/geocoding-and-search/docs/code-autocomplete-country-filter",
+           quote: "can limit the results to Germany by specifying the parameter in=countryCode:DEU"}
+      OSM Nominatim:
+        - {statement: "Search accepts countrycodes to limit results to one or more countries (not for client-side type-ahead on the public server).",
+           url: "https://nominatim.org/release-docs/latest/api/Search/",
+           quote: "Filter that limits the search results to one or more countries"}
+
+  - id: response_language
+    label: "Response / instruction language (including Indian languages)"
+    match: ['hindi', 'tamil', 'kannada', 'marathi', 'bengali', 'telugu', 'malayalam', 'gujarati', 'language', 'multilingual', 'vernacular', 'local language']
+    evidence:
+      Ola Maps:
+        - {statement: "The language parameter supports Bengali, English, Gujarati, Hindi, Kannada, Malayalam, Marathi, Oriya, Sanskrit, Tamil, Telugu and Urdu.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Response language - bn (Bengali), en (English), gu (Gujarati), hi (Hindi), kn (Kannada), ml (Malayalam), mr (Marathi)"}
+      Mapbox:
+        - {statement: "Directions has a language parameter for the turn-by-turn text instructions (default en).",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "The language of returned turn-by-turn text instructions"}
+      Google Maps Platform:
+        - {statement: "Directions and Distance Matrix have a language parameter for returned results (see the supported-languages list).",
+           url: "https://developers.google.com/maps/documentation/distance-matrix/distance-matrix",
+           quote: "The language in which to return results"}
+
+  - id: matrix_size
+    label: "Distance matrix size per request"
+    match: ['matrix', 'many[- ]to[- ]many', 'origins', 'destinations', '\d+\s*[x×]\s*\d+']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Distance Matrix (Legacy): max 25 origins or 25 destinations and 100 elements per server-side request.",
+           url: "https://developers.google.com/maps/documentation/distance-matrix/usage-and-billing",
+           quote: "Maximum of 25 origins or 25 destinations per request"}
+      Ola Maps:
+        - {statement: "Distance Matrix: x origins times y destinations may not exceed 50 pairs per request.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "with a maximum of 50 pairs per request"}
+      Mapbox:
+        - {statement: "Matrix: up to 625 elements per request (25 sources x 25 destinations).",
+           url: "https://docs.mapbox.com/api/navigation/matrix/",
+           quote: "The maximum number of elements per request is 625"}
+      HERE:
+        - {statement: "Matrix Routing: up to 10,000 origins and 10,000 destinations; with custom options and dynamic traffic, up to 15 origins and 100 destinations or 100 origins and one destination.",
+           url: "https://docs.here.com/routing/docs/matrix-v8-intro",
+           quote: "up to 15 origins and 100 destinations or up to 100 origins and one (1) destination"}
+
+  - id: waypoint_capacity
+    label: "Waypoints / stops per route request"
+    match: ['waypoints?', '\bstops\b', 'multi[- ]?stop', '\d+\s*stops']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Directions allows up to 25 waypoints per request (more than 10 intermediates is billed at the higher Advanced rate).",
+           url: "https://developers.google.com/maps/documentation/directions/usage-and-billing",
+           quote: "a maximum of 25 waypoints per request"}
+      Ola Maps:
+        - {statement: "Directions accepts up to 25 waypoints (Directions Basic up to 10).",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Optional waypoints joined by '|' separator in lat,lng format. Up to 25 waypoints"}
+      Mapbox:
+        - {statement: "Directions accepts up to 25 coordinates for driving, driving-traffic, walking and cycling.",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "Requests using this profile accept up to 25 coordinates"}
+
+  - id: self_hosting
+    label: "Self-hosting / open-source option"
+    match: ['self[- ]?host', 'on[- ]?prem', 'own server', 'run it ourselves', 'open[- ]?source', 'licen[cs]e']
+    evidence:
+      OSRM:
+        - {statement: "OSRM is open source and can be run as the osrm-routed HTTP server or used as the libosrm C++ library.",
+           url: "https://project-osrm.org/docs/v5.24.0/api/",
+           quote: "OSRM can be used as a library (libosrm) via C++ instead of using it through the HTTP interface and osrm-routed"}
+      OSM Nominatim:
+        - {statement: "For larger needs than the public server allows, you can install your own Nominatim instance.",
+           url: "https://operations.osmfoundation.org/policies/nominatim/",
+           quote: "If your requirements are even larger you can install your own instance of Nominatim"}
+
+  - id: regional_boundaries
+    label: "Regional / political boundary handling (for example Indian borders)"
+    match: ['boundar', 'border', 'worldview', 'disputed', 'indian law', 'map of india']
+    evidence:
+      Mapbox:
+        - {statement: "Geocoding has a worldview parameter that returns features as defined by different regional audiences (including 'in').",
+           url: "https://docs.mapbox.com/api/search/geocoding/",
+           quote: "Returns features that are defined differently by audiences that belong to various regional, cultural, or political groups"}
+
+  # ---- added for A6 (capability library 9 -> 25). Every quote below was found in the fetched pages; the test fails otherwise. ----
+  - id: reverse_geocoding
+    label: "Reverse geocoding (coordinates to address)"
+    match: ['reverse[- ]?geocod', 'coordinates? to (an )?address', 'lat[/, ]?(lng|lon).{0,20}address', 'address (from|for) (a )?(coordinates?|location)']
+    evidence:
+      Google Maps Platform:
+        - {statement: "The Geocoding API translates a location on the map into a human-readable address (reverse geocoding).",
+           url: "https://developers.google.com/maps/documentation/geocoding/requests-reverse-geocoding",
+           quote: "translating a location on the map into a human-readable address, is known as reverse geocoding"}
+      Mapbox:
+        - {statement: "The Geocoding API does forward geocoding and reverse geocoding.",
+           url: "https://docs.mapbox.com/api/search/geocoding/",
+           quote: "The Mapbox Geocoding API does two things: forward geocoding and reverse geocoding"}
+      HERE:
+        - {statement: "The Reverse Geocode endpoint (/revgeocode) finds the nearest address to given coordinates.",
+           url: "https://docs.here.com/geocoding-and-search/docs/reverse-geocode",
+           quote: "To find the nearest address to specific geo-coordinates, you can submit a request to the Reverse Geocode endpoint"}
+      Ola Maps:
+        - {statement: "The reverse geocode endpoint takes a latlng parameter and returns the address.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "The coordinates of which you want to do the reverse geocoding to get the address"}
+      OSM Nominatim:
+        - {statement: "The Reverse API generates an address from a latitude and longitude (it does not compute the address exactly for the point received).",
+           url: "https://nominatim.org/release-docs/latest/api/Reverse/",
+           quote: "Reverse geocoding generates an address from a coordinate given as latitude and longitude"}
+
+  - id: map_matching
+    label: "Map matching / snapping GPS points to roads"
+    match: ['map[- ]?match', 'snap(ping)? .{0,25}road', 'gps (trace|points?|breadcrumbs?)', 'clean (up )?(the )?gps']
+    evidence:
+      OSRM:
+        - {statement: "The Match service snaps GPS points to the road network in the most plausible way.",
+           url: "https://project-osrm.org/docs/v5.24.0/api/",
+           quote: "Map matching matches/snaps given GPS points to the road network in the most plausible way"}
+      Ola Maps:
+        - {statement: "A Roads API snaps a list of coordinates to the nearest routable road segments or aligns them using map matching.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "snaps them to the nearest routable road segments or aligns  them using map matching"}
+
+  - id: avoid_tolls_roads
+    label: "Avoiding toll roads and other road types"
+    match: ['avoid(ing)? (the )?tolls?', 'toll[- ]?(free|roads?)', 'no tolls', 'exclude (the )?(tolls?|ferr)', 'avoid (ferr|highway|motorway)']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Directions has an avoid option; avoid=tolls asks for routes that avoid toll roads and bridges.",
+           url: "https://developers.google.com/maps/documentation/directions/get-directions",
+           quote: "tolls indicates that the calculated route should avoid toll roads/bridges"}
+      HERE:
+        - {statement: "Routing v8 supports custom penalty parameters for road attributes such as toll roads, motorways and ferries.",
+           url: "https://docs.here.com/routing/docs/routing-v8-intro",
+           quote: "Define custom penalty parameters to determine which road attributes to use in route calculation, such as toll roads, motorways, and boat and rail ferries"}
+
+  - id: alternative_routes
+    label: "Alternative routes"
+    match: ['alternative (routes?|paths?)', 'alternatives', 'second best route', 'backup route']
+    evidence:
+      Mapbox:
+        - {statement: "Directions can return alternative routes that differ significantly from the fastest route but are close in time.",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "An alternative route is a route that is significantly different from the fastest route, but still close in time"}
+      OSRM:
+        - {statement: "The Route service accepts alternatives=n to search for up to n alternative routes.",
+           url: "https://project-osrm.org/docs/v5.24.0/api/",
+           quote: "Passing a number alternatives=n searches for up to n alternative routes"}
+
+  - id: truck_vehicle_routing
+    label: "Truck / vehicle-specific routing (height, weight, transport type)"
+    match: ['\btrucks?\b', 'lorry', 'heavy vehicle', 'vehicle (height|weight|restriction)', 'hazmat', 'commercial vehicle', 'transport mode']
+    evidence:
+      HERE:
+        - {statement: "Routing v8 returns routes valid for a given transport type such as car or truck; matrices can be calculated for cars, trucks, pedestrians, bicycles, taxis or scooters.",
+           url: "https://docs.here.com/routing/docs/routing-v8-intro",
+           quote: "Specify different means of transportation , such as car or truck , and return routes that are valid for that specific transport type"}
+      Mapbox:
+        - {statement: "Directions accepts a maximum vehicle height and weight and then uses only roads whose limits allow it.",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "the Directions API will compute a route that includes only roads with a weight limit greater than or equal to the max vehicle weight"}
+
+  - id: ev_routing
+    label: "Electric-vehicle routing with charging stops"
+    match: ['electric vehicles?', '\bev\b', 'charging (stops?|stations?)', 'battery']
+    evidence:
+      Mapbox:
+        - {statement: "Directions can calculate routes for electric vehicles with charging stops and battery prediction.",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "Calculate routes for electric vehicles to reach destinations with optimal charging stops as well as battery prediction"}
+
+  - id: turn_by_turn
+    label: "Turn-by-turn instructions"
+    match: ['turn[- ]by[- ]turn', 'step[- ]by[- ]step (directions|instructions)', 'navigation instructions', 'maneuvers?']
+    evidence:
+      HERE:
+        - {statement: "Routing v8 can be used to create applications with turn-by-turn guidance.",
+           url: "https://docs.here.com/routing/docs/routing-v8-intro",
+           quote: "Create applications that enable turn-by-turn guidance"}
+      OSRM:
+        - {statement: "Route responses are divided into legs and steps; a step is a maneuver such as a turn or merge followed by a distance of travel.",
+           url: "https://project-osrm.org/docs/v5.24.0/api/",
+           quote: "A step consists of a maneuver such as a turn or merge, followed by a distance of travel along a single way to the subsequent step"}
+      Ola Maps:
+        - {statement: "Directions provides detailed turn-by-turn navigation and step instructions.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "It provides detailed turn-by-turn navigation, step instructions, distance, duration, and real-time traffic congestion insights when requested"}
+
+  - id: elevation
+    label: "Elevation data"
+    match: ['elevation', 'altitude', 'gradient', 'terrain']
+    evidence:
+      Ola Maps:
+        - {statement: "An Elevation API returns the elevation of a location.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "This API gives the elevation of a single location given in input"}
+      Google Maps Platform:
+        - {statement: "An Elevation service exists (named in Google's FAQ as having a client-side equivalent in the Maps JavaScript API).",
+           url: "https://developers.google.com/maps/faq",
+           quote: "Elevation , Geocoding"}
+
+  - id: static_map_images
+    label: "Static map images"
+    match: ['static (maps?|images?)', 'map (image|snapshot)', 'thumbnail map']
+    evidence:
+      Mapbox:
+        - {statement: "Static Images API generates static map images from Mapbox styles.",
+           url: "https://www.mapbox.com/pricing",
+           quote: "Generate static map images from Mapbox styles"}
+      Ola Maps:
+        - {statement: "A static map endpoint returns an image centred on a latitude and longitude, and another for a bounding box.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Retrieves a static map image centered on a specific latitude and longitude"}
+
+  - id: map_tiles
+    label: "Map tiles (vector / raster)"
+    match: ['\btiles?\b', 'vector tiles?', 'raster tiles?', 'base ?map']
+    evidence:
+      Mapbox:
+        - {statement: "Vector Tiles and Raster Tiles APIs are priced products.",
+           url: "https://www.mapbox.com/pricing",
+           quote: "including Directions API, Vector Tiles API, and Raster Tiles API requests"}
+      Ola Maps:
+        - {statement: "Ola Maps lists Routing, Roads, Places, Geocode, Geofencing, Elevation and Tiles APIs.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Our comprehensive suite of APIs includes Routing, Roads, Places, Geocode, Geofencing, Elevation, and Tiles APIs"}
+
+  - id: geofencing
+    label: "Geofencing"
+    match: ['geo[- ]?fenc', 'virtual boundar', 'enter(s|ing)? (a |the )?zone']
+    evidence:
+      Ola Maps:
+        - {statement: "Ola Maps lists a Geofencing API among its suite.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Our comprehensive suite of APIs includes Routing, Roads, Places, Geocode, Geofencing, Elevation, and Tiles APIs"}
+
+  - id: address_validation
+    label: "Address validation"
+    match: ['address validation', 'validate (an |the |customer )?address', 'verify (an |the )?address', 'deliverable address']
+    evidence:
+      Ola Maps:
+        - {statement: "An Address Validation endpoint returns a response for a valid input address.",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "Successful Address Validation Response for valid input address"}
+      Google Maps Platform:
+        - {statement: "Address Validation API exists (listed with the Geocoding and Geolocation APIs in the Geocoding policies).",
+           url: "https://developers.google.com/maps/documentation/geocoding/policies",
+           quote: "Geocoding API, Geolocation API, and Address Validation API"}
+
+  - id: arrival_time_routing
+    label: "Routing for a required arrival time"
+    match: ['arriv(e|al) (by|time|before)', 'arrival_time', 'must (be there|arrive)', 'deliver(y)? (by|before) \d']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Directions accepts either departure_time or arrival_time, but not both.",
+           url: "https://developers.google.com/maps/documentation/directions/get-directions",
+           quote: "You can specify either departure_time or arrival_time , but not both"}
+      Mapbox:
+        - {statement: "Directions can take timed turn restrictions and access restrictions into account for a requested arrival time (arrive_by).",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "The route takes timed turn restrictions and conditional access restrictions into account based on the requested arrival time"}
+
+  - id: search_location_bias
+    label: "Biasing or restricting search results around a location"
+    match: ['bias', 'near (me|the user|a location)', 'closest to (the )?user', 'proximity', 'within (a )?radius', 'nearby results']
+    evidence:
+      Mapbox:
+        - {statement: "The proximity parameter biases results to a coordinate, or to the caller's IP location.",
+           url: "https://docs.mapbox.com/api/search/geocoding/",
+           quote: "string ip to bias based on reverse IP lookup"}
+      Ola Maps:
+        - {statement: "Autocomplete has a radius parameter that RESTRICTS results (a restriction, not a bias).",
+           url: "https://maps.olakrutrim.com/openapi/ola-maps-apis-oas.yaml",
+           quote: "This is a restriction, rather than a bias, meaning that results outside this radius will not be returned even if they match the user input"}
+
+  - id: bulk_geocoding
+    label: "Bulk / batch geocoding"
+    match: ['bulk geocod', 'batch geocod', 'in bulk', 'geocode .{0,25}(million|thousand|lakh|addresses)', 'geocode (a )?(large|many)', 'address (list|file|dump)']
+    evidence:
+      Mapbox:
+        - {statement: "Batch geocoding has its own endpoint (a batch request may hold up to 50 queries).",
+           url: "https://docs.mapbox.com/api/search/geocoding/",
+           quote: "Batch geocoding now has it's own endpoint"}
+      OSM Nominatim:
+        - {statement: "On the public Nominatim server bulk geocoding of larger amounts of data is not encouraged (host your own instance instead).",
+           url: "https://operations.osmfoundation.org/policies/nominatim/",
+           quote: "bulk geocoding of larger amounts of data is not encouraged"}
+
+  - id: route_geometry_format
+    label: "Route geometry formats (polyline, GeoJSON)"
+    match: ['polyline', 'geojson', 'route (geometry|shape|line)', 'draw the route', 'decode (the )?route']
+    evidence:
+      Google Maps Platform:
+        - {statement: "Locations can be supplied as an Encoded Polyline (enc: prefix).",
+           url: "https://developers.google.com/maps/documentation/directions/get-directions",
+           quote: "you can supply an encoded set of points using the Encoded Polyline Algorithm"}
+      HERE:
+        - {statement: "The route shape can be requested as a flexible-polyline.",
+           url: "https://docs.here.com/routing/docs/routing-v8-intro",
+           quote: "the shape of the route as a flexible-polyline"}
+      Mapbox:
+        - {statement: "Directions geometries: geojson (LineString), polyline (precision 5, default) or polyline6.",
+           url: "https://docs.mapbox.com/api/navigation/directions/",
+           quote: "geojson (as LineString ), polyline (default, a polyline with a precision of five decimal places), polyline6"}
+      OSRM:
+        - {statement: "OSRM returns polyline (Google format, precision 5 by default), polyline6 or geojson geometry.",
+           url: "https://project-osrm.org/docs/v5.24.0/api/",
+           quote: "polyline follows Google's polyline format with precision 5 by default"}
+      OSM Nominatim:
+        - {statement: "Search and Reverse output can be GeoJSON, KML, SVG or WKT.",
+           url: "https://nominatim.org/release-docs/latest/api/Search/",
+           quote: "Output formats in GeoJSON, KML, SVG or WKT are supported"}

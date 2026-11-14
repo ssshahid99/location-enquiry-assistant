@@ -1,0 +1,2 @@
+# Documentation freshness (checklist R7). Prices, limits and policies change; the answers are only as current as the fetched snapshot.
+max_age_days: 45        # the UI shows a warning when the oldest fetched page is older than this

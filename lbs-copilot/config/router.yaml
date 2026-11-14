@@ -1,0 +1,31 @@
+# Routing policy (project minutes, 3 Nov 2026: "route simple questions to the LLM, complex queries to the agent, and cases that need
+# human judgment to a person; evaluate cost-accuracy trade-offs"). RECORDED AS A DESIGN CHOICE, not a decision from the minutes:
+# edit these lists to change behaviour; eval/agent_eval.py reports routing accuracy and the share of traffic per route.
+#
+# Order of decisions: guard (refuse) -> general questions (rag) -> open case (agent) -> escalation categories
+#   -> workflow-specific rules below -> default rag.
+
+human_judgment_categories:      # escalation categories that need a person's decision (a case + handoff is prepared, no customer draft)
+  - contract_request
+  - security_incident
+
+incident_categories:            # support categories that always become a case (diagnostics, evidence, approvals)
+  - security
+  - outage
+  - rate_limit
+  - auth
+  - billing
+  - data_quality
+
+sales_agent_categories:         # sales conversations that need qualification, capability matching or a considered reply
+  - discovery
+  - contract
+  - migration
+  - competitive
+  - capability_match
+  - licensing
+# sales 'pricing' goes to the RAG: prices come from the deterministic calculator (cheaper and already exact)
+
+# Support questions that already contain everything needed (no missing required information) are answered by the RAG directly.
+# If required information is missing the agent takes over so the customer is asked targeted questions.
+support_agent_when_missing_required: true
