@@ -67,3 +67,8 @@ Last updated: 2026-11-09. Tick items as you finish them (`[x]`). Detail for each
 - [ ] Update the project activity tracker (RAG pipeline and evaluation tasks)
 - [ ] Handover note (what exists, limits, who owns what, how to run, how to refresh)
 - Optional extras (trace dashboard, UI login and approver roles, notifications, deployment, LangGraph wrapper, compliance stretch goal) are parked in `BACKLOG.md` section D, not tracked here.
+
+## 2026-11-15 update
+- Chat redesign built (Planner routes llm / rag / escalation), measured on core: schema 100%, tool calls 100%, 0 unregistered, route 93.8%, citations 94.7%. See RESULTS_2026-11-15.md.
+- Full RAG re-run: 317/458 judged correct (69.2%) vs 299 baseline; all regression gates pass.
+- Activities 7 to 13 evidence collected. Gaps: corpus 122 docs (sheet 500 to 2,000), Activity 9 +2.4 (needs +5), citation precision 0.77 (needs 0.85), escalation recall 0.50 on core.

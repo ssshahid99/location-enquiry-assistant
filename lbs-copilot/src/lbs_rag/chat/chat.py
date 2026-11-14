@@ -38,6 +38,8 @@ _CHUNKS: dict[str, str] | None = None
 
 def _llm_reply(message: str, st: dict, client=None) -> str:
     hist = "\n".join(f"{m['role']}: {m['content'][:300]}" for m in st["history"][-6:])
+    prov = (st.get("facts") or {}).get("provider")
+    safe = _SAFE_LLM if not prov else f"I'd rather check that in the documentation than guess. What exactly would you like to know about {prov}?"
     try:
         c = client or openai_client()
         r = c.chat.completions.create(model=settings.chat_model, temperature=0, max_tokens=180, messages=[
@@ -45,8 +47,8 @@ def _llm_reply(message: str, st: dict, client=None) -> str:
             {"role": "user", "content": f"Conversation summary: {st['summary'] or '(none)'}\nRecent turns:\n{hist or '(none)'}\n\nCustomer: {message}\n/no_think"}])
         text = re.sub(r"<think>.*?</think>", "", r.choices[0].message.content or "", flags=re.S).strip()
     except Exception:  # noqa: BLE001
-        return _SAFE_LLM
-    return _SAFE_LLM if (not text or _NUMBERY.search(text)) else text
+        return safe
+    return safe if (not text or _NUMBERY.search(text)) else text
 
 
 def _format_diff(prop: dict) -> str:
@@ -70,6 +72,9 @@ def chat(con, message: str, conv_id: str | None = None, *, customer: str = "unkn
         state.add_message(con, conv_id, "customer", message, route)
         changed = state.set_facts(con, conv_id, new_facts)
         state.mark_answered(con, conv_id, [k for k in new_facts if k in st["asked"]])
+        if p["signals"].get("declined"):                      # the customer declined to give more: never ask those questions again
+            state.mark_answered(con, conv_id, list(state.unanswered(con, conv_id)))
+            state.set_pending(con, conv_id, None)
         facts = state.known_facts(con, conv_id)
         asked = state.asked(con, conv_id)
         text, citations, calc, refused, refusal_reason, esc_category, record, esc_summary = "", [], None, False, None, None, None, ""
@@ -119,8 +124,8 @@ def chat(con, message: str, conv_id: str | None = None, *, customer: str = "unkn
                 extra["record_action_id"] = prop.action_id
             except registry.ToolError as e:
                 text += f"\n\n(No record update was proposed: {e})"
-        clar = drafter.clarifying(cls.get("workflow", "support"), cls.get("category"), facts, asked, route) if route != "refuse" else \
-            {"needed": False, "questions": []}
+        clar = drafter.clarifying(cls.get("workflow", "support"), cls.get("category"), facts, asked, route) \
+            if route != "refuse" and not p["signals"].get("declined") else {"needed": False, "questions": []}
         if clar["needed"] and route == "rag" and not extra.get("abstained"):
             text += "\n\nTo tailor this, could you tell me:\n" + "\n".join(f"{i}. {q['text']}" for i, q in enumerate(clar["questions"], 1))
             for q in clar["questions"]:

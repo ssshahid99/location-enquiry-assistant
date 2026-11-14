@@ -54,3 +54,9 @@ per-step traces, FastAPI, Streamlit UI (Ask | Cases | Approvals), evaluation scr
 - Activities 7-10 evidence: MinHash near-duplicate report, 2+ chunk sizes with recall@5, 4-variant retrieval table (reranker measured OFF), MRR per bucket, citation precision >= 0.85 (now 77%).
 - DONE 2026-11-14: Activity 11 (30 hand-calculated tests), Activity 17 (20-action review-queue test), chat endpoint, UI update. STILL OPEN: Activity 13 do-not-re-ask score on the history items.
 - Retire from the main path (not deleted): Executor 24-capability library, Critic revision loop, case-first workflow (Cases tab).
+
+## 2026-11-15 open items (details in RESULTS_2026-11-15.md)
+- Corpus: 122 documents vs 500 to 2,000 required; add sources or confirm how the sheet counts.
+- Activity 9 (+2.4 vs +5 needed) and Activity 10 (citation precision 0.77 vs 0.85).
+- Generic table parser for limits and parameters (do not hand-write facts from dev answers).
+- Escalation examples and owner-labelling rule; AI judge verdicts remain unreviewed.

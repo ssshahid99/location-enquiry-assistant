@@ -94,6 +94,25 @@ def test_reply_to_our_clarifying_question_answers_the_original():
     assert p["route"] == "rag" and "rider ETAs" in p["query"]
 
 
+def test_customer_who_declines_to_give_more_gets_an_answer_not_another_question():
+    st = {"pending": {"question": "What would Ola Maps Directions cost for 300,000 requests a month?"},
+          "asked": {"gold": {"answered": False}}, "history": []}
+    p = planner.plan("I don't know yet. Please proceed on what I already said.", st, use_model=False)
+    assert p["route"] == "rag" and p["signals"]["declined"] and "300,000 requests" in p["query"]
+    st2 = {"history": [{"role": "customer", "content": "Does Mapbox support trucks?", "route": "rag"}]}
+    assert planner.plan("Not sure, go ahead", st2, use_model=False)["signals"]["declined"]
+    assert planner.plan("Not sure, go ahead", {}, use_model=False)["source"] == "fallback"       # nothing to continue
+
+
+def test_declining_marks_questions_answered_and_asks_nothing_more(con):
+    reg = fake_registry("Consider Ola, Google or Mapbox Directions [1].")
+    C.chat(con, "Hi, we're an intercity bus aggregator and want a directions API. What do you recommend?", "C-D", reg=reg, persist=False, use_model=False)
+    assert state.unanswered(con, "C-D")
+    r = C.chat(con, "I don't know yet, go ahead with what I said", "C-D", reg=reg, persist=False, use_model=False)
+    assert r["route"] == "rag" and r["outputs"]["clarifying_questions"]["needed"] is False and not state.unanswered(con, "C-D")
+    assert "To tailor this" not in r["text"]
+
+
 def test_sandbox_record_id_adds_update_record_tool():
     assert planner.plan("Sandbox CRM ticket TKT-54863. Customer asks how to get alternative routes", {}, use_model=False)["extra_tools"] == ["update_record"]
 

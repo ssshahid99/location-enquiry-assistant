@@ -26,6 +26,8 @@ RECORD_ID = re.compile(r"\b(?:TKT|OPP)-\d{3,8}\b")
 _PERSON = re.compile(r"\b(?:talk|speak|connect me|transfer me|hand (?:me )?over) to (?:a |an |the )?(?:human|person|agent|someone|representative|"
                      r"support (?:team|engineer)|account (?:manager|team))\b|\bhuman (?:agent|support)\b|\bescalate (?:this|it|my)\b|"
                      r"\braise (?:a |an )?(?:ticket|incident)\b", re.I)
+_CONTINUE = re.compile(r"\b(?:proceed|go ahead|carry on|not sure|don'?t know|do not know|no idea|undecided|not decided|haven'?t decided|"
+                       r"assume|you decide|whatever|either (?:is|way)|skip (?:that|it))\b", re.I)
 _FOLLOW = re.compile(r"^\s*(?:and|what about|how about|also|ok(?:ay)?,? (?:and|what about)|same (?:for|with)|what if)\b", re.I)
 
 _PROMPT = """You route one customer message in a chat about location APIs (Google Maps Platform, Mapbox, HERE, Ola Maps, Mappls, OSRM, Nominatim).
@@ -134,6 +136,12 @@ def plan(message: str, state: dict | None = None, *, client=None, use_model: boo
         return {**base, "route": "llm", "reason": f"general question about the system ({kind})", "source": "rule", "signals": {"meta": kind}}
     # a reply to a question we asked: answer the ORIGINAL question now that the details are known
     pending = state.get("pending")
+    last_rag_q = (pending or {}).get("question") or next(
+        (m["content"] for m in reversed(state.get("history") or []) if m["role"] == "customer" and m.get("route") == "rag"), None)
+    if last_rag_q and _CONTINUE.search(message) and "?" not in message and len(message.split()) <= 40:
+        # "I don't know yet, go ahead": the customer declined to give more detail. Answer with what is known and do not ask again.
+        return {**base, "route": "rag", "reason": "the customer asked us to proceed with what is known: answering, not asking again",
+                "source": "rule", "query": f"{last_rag_q}\nCustomer reply: {message}", "signals": {"declined": True}}
     if pending and state.get("asked") and "?" not in message:
         new = case_rules.extract_facts(message)
         if new:
