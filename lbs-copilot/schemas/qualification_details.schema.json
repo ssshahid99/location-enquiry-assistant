@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capstone.local/lbs-copilot/schemas/qualification_details/v1.0.0",
+  "title": "QualificationDetails",
+  "$comment": "Purpose: sales qualification facts pulled from the query. Use case: output 3 of 7. Example: required fields use_case_api, region, monthly_volume, current_provider, timeline; gaps go in missing_required_fields.",
+  "x-spec-version": "1.0.0",
+  "x-output": "qualification_details",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "use_case_api",
+    "region",
+    "monthly_volume",
+    "current_provider",
+    "timeline",
+    "budget",
+    "technical_constraints",
+    "decision_maker",
+    "missing_required_fields",
+    "complete"
+  ],
+  "properties": {
+    "use_case_api": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "api"
+      ],
+      "properties": {
+        "api": {
+          "type": "string",
+          "enum": [
+            "directions",
+            "distance_matrix",
+            "autocomplete",
+            "reverse_geocode"
+          ]
+        },
+        "use_case": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "monthly_volume": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "raw"
+      ],
+      "properties": {
+        "raw": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requests_per_month": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "current_provider": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "Google Maps Platform",
+        "Ola Maps",
+        "Mapbox",
+        "OSM Nominatim",
+        "OSRM",
+        "Mappls (MapmyIndia)",
+        null
+      ]
+    },
+    "timeline": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "budget": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "technical_constraints": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "decision_maker": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "missing_required_fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "use_case_api",
+          "region",
+          "monthly_volume",
+          "current_provider",
+          "timeline"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "complete": {
+      "type": "boolean"
+    }
+  }
+}

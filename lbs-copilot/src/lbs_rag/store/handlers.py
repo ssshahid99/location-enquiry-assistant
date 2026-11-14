@@ -45,6 +45,9 @@ def _handler_for(con, action: dict):
                         cases.update_case(con, cid, actor=approver, **{field: str(value)})
                 applied[field] = value
             return {"applied_fields": applied}
+        if kind == "record_update":              # sandbox CRM/ticket record only (chat/sandbox.py re-checks the target and the fields)
+            from ..chat import sandbox
+            return sandbox.apply(con, payload, action["id"])
         if kind == "owner_action":
             fields = {k: v for k, v in {"owner": payload.get("owner") or payload.get("assign_to"), "next_action": payload.get("next_action")}.items() if v}
             if cid and fields:

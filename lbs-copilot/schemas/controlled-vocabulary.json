@@ -1,0 +1,191 @@
+{
+  "version": "1.0.0",
+  "source": "C1 task spec, bound to GT v2.4 labels after Shahid's approved decisions",
+  "gt_source": "/workspace/capstone-trackb/data/gt_v2_4.xlsx",
+  "intents": [
+    "pricing_quote",
+    "pricing_comparison",
+    "sales_qualification",
+    "capability_match",
+    "coverage_limits",
+    "docs_how_to",
+    "troubleshooting",
+    "human_handoff"
+  ],
+  "sub_intents": [
+    "pricing_quote",
+    "pricing_estimate",
+    "free_tier_question",
+    "billing_question",
+    "pricing_comparison",
+    "competitive_comparison",
+    "discovery_qualification",
+    "capability_fit",
+    "licensing_fit",
+    "solution_design",
+    "capability_question",
+    "capability_matching",
+    "coverage_question",
+    "limits_question",
+    "performance_question",
+    "parameter_question",
+    "response_fields",
+    "integration_question",
+    "migration_question",
+    "policy_question",
+    "error_resolution",
+    "parameter_troubleshooting",
+    "accuracy_question",
+    "coverage_error",
+    "production_incident",
+    "security_incident",
+    "data_quality",
+    "accuracy_regression",
+    "billing_incident",
+    "contract_request",
+    "billing_dispute"
+  ],
+  "intent_to_sub_intents": {
+    "pricing_quote": [
+      "pricing_quote",
+      "pricing_estimate",
+      "free_tier_question",
+      "billing_question"
+    ],
+    "pricing_comparison": [
+      "pricing_comparison",
+      "competitive_comparison"
+    ],
+    "sales_qualification": [
+      "discovery_qualification",
+      "capability_fit",
+      "licensing_fit",
+      "solution_design"
+    ],
+    "capability_match": [
+      "capability_question",
+      "capability_matching"
+    ],
+    "coverage_limits": [
+      "coverage_question",
+      "limits_question",
+      "performance_question"
+    ],
+    "docs_how_to": [
+      "parameter_question",
+      "response_fields",
+      "integration_question",
+      "migration_question",
+      "policy_question"
+    ],
+    "troubleshooting": [
+      "error_resolution",
+      "parameter_troubleshooting",
+      "accuracy_question",
+      "coverage_error"
+    ],
+    "human_handoff": [
+      "production_incident",
+      "security_incident",
+      "data_quality",
+      "accuracy_regression",
+      "billing_incident",
+      "contract_request",
+      "billing_dispute"
+    ]
+  },
+  "buckets": [
+    "qualification",
+    "interpretation",
+    "docs",
+    "history",
+    "updates",
+    "pricecompare",
+    "capabilitycompare",
+    "coveragecompare",
+    "limitscompare",
+    "ownership"
+  ],
+  "apis": [
+    "directions",
+    "distance_matrix",
+    "autocomplete",
+    "reverse_geocode"
+  ],
+  "providers": [
+    "Google Maps Platform",
+    "Ola Maps",
+    "Mapbox",
+    "OSM Nominatim",
+    "OSRM",
+    "Mappls (MapmyIndia)"
+  ],
+  "provider_merges": {},
+  "teams": [
+    "Sales",
+    "Support"
+  ],
+  "owners": [
+    "Support L1",
+    "Support L2",
+    "Account team (Sales)",
+    "Maps engineering"
+  ],
+  "owner_role_aliases": {
+    "maps_eng": "Maps engineering",
+    "account": "Account team (Sales)",
+    "L2": "Support L2"
+  },
+  "tools": [
+    "doc_search",
+    "calculator",
+    "update_record",
+    "escalate_ticket"
+  ],
+  "tools_dropped": [],
+  "severities": [
+    "SEV1",
+    "SEV2",
+    "SEV3",
+    "SEV4"
+  ],
+  "splits": [
+    "eval",
+    "holdout"
+  ],
+  "verification_statuses": [
+    "verified_live",
+    "carried_from_v1_unverified",
+    "flagged"
+  ],
+  "review_statuses": [
+    "pending",
+    "approved",
+    "rejected"
+  ],
+  "approval_statuses": [
+    "pending",
+    "approved",
+    "rejected",
+    "not_applicable"
+  ],
+  "action_types": [
+    "answer_directly",
+    "ask_clarifying_questions",
+    "propose_record_update",
+    "propose_escalation",
+    "refuse"
+  ],
+  "qualification_required_fields": [
+    "use_case_api",
+    "region",
+    "monthly_volume",
+    "current_provider",
+    "timeline"
+  ],
+  "qualification_optional_fields": [
+    "budget",
+    "technical_constraints",
+    "decision_maker"
+  ]
+}

@@ -11,6 +11,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 import streamlit as st  # noqa: E402
 
 from lbs_rag.agent import orchestrator  # noqa: E402
+from lbs_rag.chat.chat import chat as chat_turn  # noqa: E402
 from lbs_rag.generate import meta  # noqa: E402
 from lbs_rag.generate.answer import answer  # noqa: E402
 from lbs_rag.safety.pii import redact_with_report  # noqa: E402
@@ -36,7 +37,7 @@ for _ex in meta.EXAMPLES:
         st.session_state["q"] = _ex
         st.session_state["case_msg"] = _ex
 
-ask_tab, cases_tab, approve_tab, trace_tab = st.tabs(["Ask", "Cases", "Approvals", "Traces"])
+chat_tab, ask_tab, cases_tab, approve_tab, trace_tab = st.tabs(["Chat", "Direct answer", "Case workflow (older)", "Approvals", "Traces"])
 
 
 def show_trace(con, trace_id: str):
@@ -77,6 +78,48 @@ def show_sources(citations):
             st.markdown(f"**[{c['n']}]** {c['provider']} - [{c['doc_url']}]({c['doc_url']})  \n"
                         f"<small>fetched {c.get('fetched_at', '')}</small>", unsafe_allow_html=True)
 
+
+# ------------------------------------------------------------------------------------------------ Chat
+ROUTE_BADGE = {"llm": "LLM: conversation only", "rag": "RAG: documents and calculator", "escalation": "Escalation: a person must approve",
+               "refuse": "Not processed (scope or safety rule)"}
+with chat_tab:
+    st.caption("One conversation. For every message the Planner picks ONE route: LLM (conversation), RAG (documents and the calculator) or "
+               "Escalation (a person). Escalations and record updates are only proposed; they wait in the Approvals tab.")
+    hc1, hc2 = st.columns([4, 1])
+    chat_customer = hc2.text_input("Customer", value="Demo customer", key="chat_customer")
+    if hc2.button("New conversation"):
+        st.session_state.pop("conv_id", None)
+        st.session_state["chat_log"] = []
+    log = st.session_state.setdefault("chat_log", [])
+    new_msg = st.chat_input("Type the customer's message (e.g. 'Ola Directions free tier?', 'Hello', 'I want to talk to a person')")
+    if new_msg:
+        with st.spinner("Planner is choosing a route..."):
+            _c = repo.connect()
+            try:
+                _r = chat_turn(_c, new_msg, st.session_state.get("conv_id"), customer=chat_customer)
+            finally:
+                _c.close()
+        st.session_state["conv_id"] = _r["conv_id"]
+        log.append({"user": new_msg, "r": _r})
+    if st.session_state.get("conv_id"):
+        hc1.caption(f"Conversation `{st.session_state['conv_id']}` (state is saved: facts, questions asked, summary)")
+    for turn in log:
+        with st.chat_message("user"):
+            st.markdown(turn["user"])
+        r = turn["r"]
+        with st.chat_message("assistant"):
+            st.caption(f"{ROUTE_BADGE.get(r['route'], r['route'])}  |  why: {r['route_reason']}  |  decided by: {r['route_source']}")
+            st.markdown(r["text"])
+            show_sources(r.get("citations", []))
+            if r.get("action_id") or r.get("record_action_id"):
+                st.warning("Waiting for human approval in the Approvals tab. Nothing has been sent or changed.")
+            if r["schema_errors"]:
+                st.error("Output failed schema validation: " + "; ".join(r["schema_errors"][:3]))
+            with st.expander("Structured outputs (the 7 schema-valid outputs)"):
+                st.json(r["outputs"], expanded=False)
+            with st.expander("Tool calls and model calls"):
+                st.write(f"Model calls this turn: {r['model_calls']}")
+                st.json(r["tool_calls"], expanded=False)
 
 # ------------------------------------------------------------------------------------------------ Ask
 with ask_tab:
@@ -324,6 +367,13 @@ with approve_tab:
                     if "draft_reply" in pl:
                         d2 = st.text_area("Draft reply", value=pl.get("draft_reply", ""), height=140, key=f"e{p['id']}")
                         edited = {**pl, "draft_reply": d2} if d2 != pl.get("draft_reply", "") else None
+                elif kind == "record_update":
+                    st.write(f"Sandbox record **{pl.get('record_id')}**: proposed field-level changes (old -> new). Nothing is written until you approve.")
+                    new_fields = {}
+                    for field, val in pl.get("fields", {}).items():
+                        old = (pl.get("diff", {}).get(field) or {}).get("old")
+                        new_fields[field] = st.text_input(f"{field} (was: {old if old is not None else '(empty)'})", value=str(val), key=f"rf{p['id']}{field}")
+                    edited = {**pl, "fields": new_fields} if new_fields != {k: str(v) for k, v in pl.get("fields", {}).items()} else None
                 elif kind == "tracker_update":
                     st.write("Proposed tracker changes (old -> new):")
                     for field, ch in pl.get("changes", {}).items():

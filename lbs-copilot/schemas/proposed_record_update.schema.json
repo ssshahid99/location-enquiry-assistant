@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capstone.local/lbs-copilot/schemas/proposed_record_update/v1.0.0",
+  "title": "ProposedRecordUpdate",
+  "$comment": "Purpose: a sandbox CRM/ticket update proposal. Use case: output 4 of 7, filled when update_record is expected. Example: requires applicable, requires_human_approval, approval_status, executed and proposal; gold keeps executed=false, approval_status=pending.",
+  "x-spec-version": "1.0.0",
+  "x-output": "proposed_record_update",
+  "description": "Sandbox record-update proposal. Nothing is written unless approval_status is approved. The validator rejects executed=true without approval.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "applicable",
+    "requires_human_approval",
+    "approval_status",
+    "executed",
+    "proposal"
+  ],
+  "properties": {
+    "applicable": {
+      "type": "boolean"
+    },
+    "requires_human_approval": {
+      "type": "boolean"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "not_applicable"
+      ]
+    },
+    "executed": {
+      "type": "boolean"
+    },
+    "proposal": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "record_id",
+        "mode",
+        "fields"
+      ],
+      "properties": {
+        "record_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mode": {
+          "type": "string",
+          "const": "propose"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          },
+          "properties": {
+            "category": {
+              "type": "string"
+            },
+            "api": {
+              "type": "string",
+              "enum": [
+                "directions",
+                "distance_matrix",
+                "autocomplete",
+                "reverse_geocode"
+              ]
+            },
+            "providers": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string",
+              "enum": [
+                "SEV1",
+                "SEV2",
+                "SEV3",
+                "SEV4"
+              ]
+            },
+            "owner": {
+              "type": "string",
+              "enum": [
+                "Support L1",
+                "Support L2",
+                "Account team (Sales)",
+                "Maps engineering"
+              ]
+            },
+            "status": {
+              "type": "string"
+            },
+            "stage": {
+              "type": "string"
+            },
+            "next_step": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "applicable": {
+            "const": true
+          }
+        },
+        "required": [
+          "applicable"
+        ]
+      },
+      "then": {
+        "properties": {
+          "proposal": {
+            "type": "object"
+          },
+          "requires_human_approval": {
+            "const": true
+          },
+          "approval_status": {
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ]
+          }
+        },
+        "required": [
+          "proposal"
+        ]
+      },
+      "else": {
+        "properties": {
+          "proposal": {
+            "type": "null"
+          },
+          "requires_human_approval": {
+            "const": false
+          },
+          "approval_status": {
+            "const": "not_applicable"
+          },
+          "executed": {
+            "const": false
+          }
+        }
+      }
+    }
+  ]
+}

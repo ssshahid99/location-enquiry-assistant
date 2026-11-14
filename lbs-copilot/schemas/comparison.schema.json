@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capstone.local/lbs-copilot/schemas/comparison/v1.0.0",
+  "title": "Comparison",
+  "$comment": "Purpose: a side-by-side provider comparison. Use case: output 5 of 7, filled for comparison intents. Example: applicable=true requires at least one provider (one of the 6 canonical names, e.g. \"Ola Maps\") and one dimension (pricing, capabilities, coverage, limits).",
+  "x-spec-version": "1.0.0",
+  "x-output": "comparison",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "applicable",
+    "providers",
+    "dimensions",
+    "assumptions",
+    "source_urls"
+  ],
+  "properties": {
+    "applicable": {
+      "type": "boolean"
+    },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Google Maps Platform",
+          "Ola Maps",
+          "Mapbox",
+          "OSM Nominatim",
+          "OSRM",
+          "Mappls (MapmyIndia)"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "dimensions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "pricing",
+          "capabilities",
+          "coverage",
+          "limits"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "equivalent_requirements": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "api": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "directions",
+            "distance_matrix",
+            "autocomplete",
+            "reverse_geocode",
+            null
+          ]
+        },
+        "region": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "monthly_volume_raw": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "applicable": {
+            "const": true
+          }
+        },
+        "required": [
+          "applicable"
+        ]
+      },
+      "then": {
+        "properties": {
+          "providers": {
+            "minItems": 1
+          },
+          "dimensions": {
+            "minItems": 1
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "providers": {
+            "maxItems": 0
+          },
+          "dimensions": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ]
+}

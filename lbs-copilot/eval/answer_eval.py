@@ -182,11 +182,17 @@ def main() -> None:
     ap.add_argument("--rerank", action="store_true")
     ap.add_argument("--k", type=int, default=6, help="chunks sent to the model")
     ap.add_argument("--pricing-only", action="store_true", help="only pricing_* intents (mostly code-answered, fast)")
+    ap.add_argument("--no-cover", action="store_true", help="disable provider coverage for cross-provider questions (A/B)")
+    ap.add_argument("--intents", default="", help="comma list: only non-core items of these intents (tuning subset)")
     ap.add_argument("--dev-nonprice", action="store_true",
                     help="tuning subset: every non-core item whose intent is not pricing_* (core stays an untouched scoreboard)")
     a = ap.parse_args()
-    RETRIEVAL_OPTS.update(rewrite=not a.no_rewrite, rerank=a.rerank, k=a.k)
+    RETRIEVAL_OPTS.update(rewrite=not a.no_rewrite, rerank=a.rerank, k=a.k, cover=not a.no_cover)
     items = load_items("eval")
+    if a.intents:
+        want = {x.strip() for x in a.intents.split(",")}
+        items = [i for i in items if i.get("tier") != "core" and i["intent"] in want]
+        a.n = len(items)
     if a.pricing_only:
         items = [i for i in items if str(i["intent"]).startswith("pricing")]
     if a.dev_nonprice:

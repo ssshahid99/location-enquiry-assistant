@@ -85,7 +85,7 @@ def answer(query: str, **kw) -> dict:
 
 
 def _answer(query: str, *, k: int = TOP_K, persist: bool = True, rewrite: bool = True, route: bool = True,
-            **retrieval_opts) -> dict:
+            cover: bool = True, **retrieval_opts) -> dict:
     """rewrite=True is the default: on the rebuilt corpus it raised cited-passage recall@6 by ~8 points and citation
     support from 74% to 90% (60-question A/B); re-ranking hurt and k=8 did not help, so both stay off."""
     trace_id = uuid.uuid4().hex[:12]
@@ -122,7 +122,7 @@ def _answer(query: str, *, k: int = TOP_K, persist: bool = True, rewrite: bool =
             return _finish(query, {"text": off["message"], "citations": [], "tool_calls": [], "abstained": True, "refused": True,
                                    "escalate": False, "reason": f"refused:{off['category']}", "trace_id": trace_id,
                                    "retrieved": []}, {"escalate": False}, persist)
-    hits = retrieve(query, k=k, rewrite=rewrite, route=route, **retrieval_opts)
+    hits = retrieve(query, k=k, rewrite=rewrite, route=route, cover=cover, **retrieval_opts)
     pricing = pricing_intent.run(query)
     source_idx = _add_price_sources(hits, pricing)
     fact_lines = facts.attach_facts(hits, facts.matching_facts(query))

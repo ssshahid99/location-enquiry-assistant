@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capstone.local/lbs-copilot/schemas/next_action/v1.0.0",
+  "title": "NextAction",
+  "$comment": "Purpose: the recommended next step. Use case: output 7 of 7. Example: requires action_type, requires_human_approval, approval_status and executed; propose_record_update and propose_escalation are proposals only.",
+  "x-spec-version": "1.0.0",
+  "x-output": "next_action",
+  "description": "Recommended next action. propose_record_update and propose_escalation are proposals only and must not be executed without approval.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "action_type",
+    "description",
+    "requires_human_approval",
+    "approval_status",
+    "executed"
+  ],
+  "properties": {
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "answer_directly",
+        "ask_clarifying_questions",
+        "propose_record_update",
+        "propose_escalation",
+        "refuse"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requires_human_approval": {
+      "type": "boolean"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "not_applicable"
+      ]
+    },
+    "executed": {
+      "type": "boolean"
+    },
+    "escalation": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "severity",
+        "owner"
+      ],
+      "properties": {
+        "severity": {
+          "type": "string",
+          "enum": [
+            "SEV1",
+            "SEV2",
+            "SEV3",
+            "SEV4"
+          ]
+        },
+        "owner": {
+          "type": "string",
+          "enum": [
+            "Support L1",
+            "Support L2",
+            "Account team (Sales)",
+            "Maps engineering"
+          ]
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "action_type": {
+            "enum": [
+              "propose_record_update",
+              "propose_escalation"
+            ]
+          }
+        },
+        "required": [
+          "action_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "requires_human_approval": {
+            "const": true
+          },
+          "approval_status": {
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

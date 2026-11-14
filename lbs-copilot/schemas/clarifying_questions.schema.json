@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capstone.local/lbs-copilot/schemas/clarifying_questions/v1.0.0",
+  "title": "ClarifyingQuestions",
+  "$comment": "Purpose: the questions the copilot asks when it lacks information. Use case: output 2 of 7, nested in the envelope. Example: needed=true requires at least one questions[] item; needed=false requires none.",
+  "x-spec-version": "1.0.0",
+  "x-output": "clarifying_questions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "questions",
+    "needed"
+  ],
+  "properties": {
+    "needed": {
+      "type": "boolean"
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "field": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "needed": {
+            "const": true
+          }
+        },
+        "required": [
+          "needed"
+        ]
+      },
+      "then": {
+        "properties": {
+          "questions": {
+            "minItems": 1
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "questions": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ]
+}

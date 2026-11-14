@@ -14,7 +14,7 @@ _PATTERNS: list[tuple[str, re.Pattern]] = [
     ("AADHAAR", re.compile(r"\b\d{4}\s\d{4}\s\d{4}\b")),
     ("PAN", re.compile(r"\b[A-Z]{5}\d{4}[A-Z]\b")),
     # Indian mobile numbers as people write them: 9876543210, 98765 43210, 98765-43210, +91 98765 43210, +91-9876543210, 0091 98765 43210
-    ("PHONE", re.compile(r"(?<![\d,.])(?:(?:\+|00)91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}(?![\d,.]|\s?\d)")),
+    ("PHONE", re.compile(r"(?<![\d,.])(?:(?:\+|00)91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}(?![\d]|[,.]\d|\s?\d)")),     # a trailing comma / full stop is fine ("my phone is 98765 43210, thanks")
     ("IP", re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")),
 ]
 _CARD = re.compile(r"\b(?:\d[ -]?){13,16}\b")

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capstone.local/lbs-copilot/schemas/response_draft/v1.0.0",
+  "title": "ResponseDraft",
+  "$comment": "Purpose: the drafted reply with citations. Use case: output 1 of 7; gold draft_text is the GT reference_answer. Example: each citation needs url, span and supports_claim; is_refusal=true requires a refusal object.",
+  "x-spec-version": "1.0.0",
+  "x-output": "response_draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "draft_text",
+    "citations",
+    "is_refusal",
+    "refusal"
+  ],
+  "properties": {
+    "draft_text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The customer-facing or agent-facing draft reply. Gold value is the GT reference_answer."
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "url",
+          "span",
+          "supports_claim"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 1
+          },
+          "span": {
+            "type": "string",
+            "minLength": 1
+          },
+          "supports_claim": {
+            "type": "string",
+            "minLength": 1
+          },
+          "quote_or_summary": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "verbatim",
+              "summary",
+              null
+            ]
+          }
+        }
+      }
+    },
+    "is_refusal": {
+      "type": "boolean"
+    },
+    "refusal": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "reason"
+      ],
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unsafe_or_out_of_scope": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "is_refusal": {
+            "const": true
+          }
+        },
+        "required": [
+          "is_refusal"
+        ]
+      },
+      "then": {
+        "properties": {
+          "refusal": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "refusal"
+        ]
+      },
+      "else": {
+        "properties": {
+          "refusal": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

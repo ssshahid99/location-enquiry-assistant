@@ -47,3 +47,10 @@ per-step traces, FastAPI, Streamlit UI (Ask | Cases | Approvals), evaluation scr
 - [ ] Stretch goal (optional): compliance requirements and checks.
 - [ ] Optional extras (parked here on purpose, not in the project checklist): trace dashboard (Langfuse needs Docker; SQLite traces exist), notifications, login for the UI (none today), deployment, multi-approver roles, LangGraph wrapper, stretch goal "compliance requirements and checks".
 - [ ] Note: the agent layer is plain Python orchestration (not LangGraph); it has explicit state, pause/resume and tests. LangGraph can wrap it later if the team wants it.
+
+## 2026-11-14 chat redesign: open items
+- Escalation recall on unseen wording is 0.50 (core): add labelled escalation examples, review the rules by category; the model fallback is OFF (LBS_ESC_MODEL=1).
+- Owner accuracy 88% on working / 69% on core: gold owner labels mix Support L1 and Account team for sales questions; confirm the labelling rule with the annotators.
+- Activities 7-10 evidence: MinHash near-duplicate report, 2+ chunk sizes with recall@5, 4-variant retrieval table (reranker measured OFF), MRR per bucket, citation precision >= 0.85 (now 77%).
+- Activity 11: 30 hand-calculated calculator tests; Activity 13: do-not-re-ask score on history items; Activity 17: 20-action review-queue test; chat endpoint in api/server.py.
+- Retire from the main path (not deleted): Executor 24-capability library, Critic revision loop, case-first workflow (Cases tab).

@@ -15,7 +15,7 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
-ACTION_TYPES = {"escalation", "tracker_update", "handoff", "external_send", "owner_action", "other"}
+ACTION_TYPES = {"escalation", "tracker_update", "handoff", "external_send", "owner_action", "record_update", "other"}
 _CASE_FIELDS = {"customer", "status", "owner", "type", "workflow", "provider", "api", "category", "urgency", "next_action"}
 
 

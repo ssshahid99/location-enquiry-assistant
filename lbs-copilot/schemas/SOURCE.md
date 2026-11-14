@@ -1,0 +1,1 @@
+﻿These JSON Schemas (v1.0.0, final on master) and the controlled vocabulary are copied from the Track-B repository (github.com/ssshahid99/locsvc-copilot-trackb, folders schemas/ and vocab/, owner Shahid Kamal). Do not edit them here; update by copying from that repository.

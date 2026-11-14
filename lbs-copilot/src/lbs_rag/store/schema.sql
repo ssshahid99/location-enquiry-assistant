@@ -8,3 +8,8 @@ CREATE TABLE IF NOT EXISTS case_events (id INTEGER PRIMARY KEY AUTOINCREMENT, ca
 CREATE TABLE IF NOT EXISTS trace_steps (id INTEGER PRIMARY KEY AUTOINCREMENT, trace_id TEXT, case_id TEXT, step TEXT, component TEXT, input_json TEXT, output_json TEXT, ms INT, ts TEXT);
 CREATE TABLE IF NOT EXISTS case_facts (case_id TEXT, key TEXT, value TEXT, source_message_id INTEGER, ts TEXT, PRIMARY KEY(case_id, key));
 CREATE TABLE IF NOT EXISTS case_tracker (case_id TEXT, field TEXT, value TEXT, approved_by TEXT, approved_at TEXT, source_action_id INTEGER, PRIMARY KEY(case_id, field));
+CREATE TABLE IF NOT EXISTS conversations (id TEXT PRIMARY KEY, customer TEXT, created_at TEXT, updated_at TEXT, summary TEXT, pending_json TEXT);
+CREATE TABLE IF NOT EXISTS conv_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, conv_id TEXT, role TEXT, content TEXT, route TEXT, ts TEXT);
+CREATE TABLE IF NOT EXISTS conv_facts (conv_id TEXT, key TEXT, value TEXT, ts TEXT, PRIMARY KEY(conv_id, key));
+CREATE TABLE IF NOT EXISTS conv_asked (conv_id TEXT, field TEXT, question TEXT, ts TEXT, answered INT DEFAULT 0, PRIMARY KEY(conv_id, field));
+CREATE TABLE IF NOT EXISTS sandbox_records (record_id TEXT PRIMARY KEY, kind TEXT, fields_json TEXT, updated_at TEXT, last_action_id INTEGER);

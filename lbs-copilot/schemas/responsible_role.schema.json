@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capstone.local/lbs-copilot/schemas/responsible_role/v1.0.0",
+  "title": "ResponsibleRole",
+  "$comment": "Purpose: who owns the request. Use case: output 6 of 7, used for routing and escalation. Example: owner is one of Support L1, Support L2, Account team (Sales), Maps engineering; severity is SEV1-SEV4.",
+  "x-spec-version": "1.0.0",
+  "x-output": "responsible_role",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "owner",
+    "team",
+    "should_escalate",
+    "severity",
+    "reason"
+  ],
+  "properties": {
+    "owner": {
+      "type": "string",
+      "enum": [
+        "Support L1",
+        "Support L2",
+        "Account team (Sales)",
+        "Maps engineering"
+      ]
+    },
+    "team": {
+      "type": "string",
+      "enum": [
+        "Sales",
+        "Support"
+      ]
+    },
+    "should_escalate": {
+      "type": "boolean"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "SEV1",
+        "SEV2",
+        "SEV3",
+        "SEV4"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

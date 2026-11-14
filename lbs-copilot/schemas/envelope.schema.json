@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://capstone.local/lbs-copilot/schemas/envelope/v1.0.0",
+  "title": "CopilotOutputEnvelope",
+  "$comment": "Purpose: wrapper for one copilot answer holding all 7 outputs plus record metadata. Use case: each line of mapping/gold_outputs_*.jsonl is one envelope. Example: step_count_limit=10 and output_token_budget=1024; self_review_date/self_review_evidence may be null.",
+  "x-spec-version": "1.0.0",
+  "x-output": "envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_id",
+    "intent",
+    "sub_intent",
+    "api",
+    "team",
+    "bucket",
+    "tools_expected",
+    "step_count_limit",
+    "output_token_budget",
+    "self_review_date",
+    "self_review_evidence",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "intent": {
+      "type": "string",
+      "enum": [
+        "pricing_quote",
+        "pricing_comparison",
+        "sales_qualification",
+        "capability_match",
+        "coverage_limits",
+        "docs_how_to",
+        "troubleshooting",
+        "human_handoff"
+      ]
+    },
+    "sub_intent": {
+      "type": "string",
+      "enum": [
+        "pricing_quote",
+        "pricing_estimate",
+        "free_tier_question",
+        "billing_question",
+        "pricing_comparison",
+        "competitive_comparison",
+        "discovery_qualification",
+        "capability_fit",
+        "licensing_fit",
+        "solution_design",
+        "capability_question",
+        "capability_matching",
+        "coverage_question",
+        "limits_question",
+        "performance_question",
+        "parameter_question",
+        "response_fields",
+        "integration_question",
+        "migration_question",
+        "policy_question",
+        "error_resolution",
+        "parameter_troubleshooting",
+        "accuracy_question",
+        "coverage_error",
+        "production_incident",
+        "security_incident",
+        "data_quality",
+        "accuracy_regression",
+        "billing_incident",
+        "contract_request",
+        "billing_dispute"
+      ]
+    },
+    "api": {
+      "type": "string",
+      "enum": [
+        "directions",
+        "distance_matrix",
+        "autocomplete",
+        "reverse_geocode"
+      ]
+    },
+    "team": {
+      "type": "string",
+      "enum": [
+        "Sales",
+        "Support"
+      ]
+    },
+    "bucket": {
+      "type": "string",
+      "enum": [
+        "qualification",
+        "interpretation",
+        "docs",
+        "history",
+        "updates",
+        "pricecompare",
+        "capabilitycompare",
+        "coveragecompare",
+        "limitscompare",
+        "ownership"
+      ]
+    },
+    "tools_expected": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "doc_search",
+          "calculator",
+          "update_record",
+          "escalate_ticket"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "tools_raw_gt": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Unmodified expected_tools tokens from GT v2.4."
+    },
+    "step_count_limit": {
+      "type": "integer",
+      "const": 10
+    },
+    "output_token_budget": {
+      "type": "integer",
+      "const": 1024
+    },
+    "approx_output_tokens": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "split": {
+      "type": "string",
+      "enum": [
+        "eval",
+        "holdout"
+      ]
+    },
+    "frozen_core": {
+      "type": "boolean"
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "response_draft",
+        "clarifying_questions",
+        "qualification_details",
+        "proposed_record_update",
+        "comparison",
+        "responsible_role",
+        "next_action"
+      ],
+      "properties": {
+        "response_draft": {
+          "$ref": "https://capstone.local/lbs-copilot/schemas/response_draft/v1.0.0"
+        },
+        "clarifying_questions": {
+          "$ref": "https://capstone.local/lbs-copilot/schemas/clarifying_questions/v1.0.0"
+        },
+        "qualification_details": {
+          "$ref": "https://capstone.local/lbs-copilot/schemas/qualification_details/v1.0.0"
+        },
+        "proposed_record_update": {
+          "$ref": "https://capstone.local/lbs-copilot/schemas/proposed_record_update/v1.0.0"
+        },
+        "comparison": {
+          "$ref": "https://capstone.local/lbs-copilot/schemas/comparison/v1.0.0"
+        },
+        "responsible_role": {
+          "$ref": "https://capstone.local/lbs-copilot/schemas/responsible_role/v1.0.0"
+        },
+        "next_action": {
+          "$ref": "https://capstone.local/lbs-copilot/schemas/next_action/v1.0.0"
+        }
+      }
+    },
+    "self_review_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Date of the recorded second-pass self-review. Null or blank until the review happens."
+    },
+    "self_review_evidence": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Evidence pointer for the recorded second-pass self-review. Null or blank until the review happens."
+    }
+  }
+}
