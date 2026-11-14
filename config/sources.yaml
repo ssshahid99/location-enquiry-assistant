@@ -797,3 +797,59 @@ sources:
   licence: public reference
   fetch_method: playwright
   gold_citations: 124
+- url: https://developers.google.com/maps/coverage
+  provider: Google Maps Platform
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 38
+- url: https://developers.google.com/maps/support
+  provider: Google Maps Platform
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 4
+- url: https://docs.mapbox.com/api/guides
+  provider: Mapbox
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 11
+- url: https://docs.mapbox.com/accounts/guides/tokens
+  provider: Mapbox
+  api: general
+  kind: html
+  licence: vendor docs
+  fetch_method: httpx
+  gold_citations: 7
+- url: https://developer.mappls.com/documentation/sdk/rest-apis/mappls-routing-api/readme
+  provider: Mappls (MapmyIndia)
+  api: Directions
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 10
+- url: https://developer.mappls.com/documentation/sdk/rest-apis/mappls-distance-matrix-api/readme
+  provider: Mappls (MapmyIndia)
+  api: Distance Matrix
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 23
+- url: https://developer.mappls.com/documentation/sdk/rest-apis/mappls-maps-auto-suggest-api-example/Readme
+  provider: Mappls (MapmyIndia)
+  api: Autocomplete
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 20
+- url: https://developer.mappls.com/documentation/sdk/rest-apis/mappls-maps-reverse-geocoding-rest-api-example/Readme
+  provider: Mappls (MapmyIndia)
+  api: Reverse Geocode
+  kind: html
+  licence: vendor docs
+  fetch_method: playwright
+  gold_citations: 15

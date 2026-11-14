@@ -11,3 +11,6 @@ eval/review/answers_cache*.json
 .pytest_cache/
 *.crt
 *.pem
+
+data/backup_chroma_tiktoken450/
+data/processed/chunks.tiktoken450.jsonl

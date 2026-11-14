@@ -1,4 +1,4 @@
-﻿"""Central settings, loaded from .env (never committed), plus the model-call counter used to measure cost per route."""
+"""Central settings, loaded from .env (never committed), plus the model-call counter used to measure cost per route."""
 import contextlib
 import contextvars
 from pathlib import Path
@@ -22,7 +22,15 @@ class Settings(BaseSettings):
     # The gateway only serves Qwen/Qwen3-8B (chat); /embeddings returns 404 in this pilot,
     # so embeddings run locally with sentence-transformers.
     chat_model: str = "Qwen/Qwen3-8B"
-    embed_model: str = "BAAI/bge-base-en-v1.5"
+    embed_model: str = "BAAI/bge-base-en-v1.5"           # LOCAL backend only (development fallback)
+
+    # Shared embedding endpoint (VM02): bge-small-en-v1.5, 384 dimensions, 512 tokens per text, 16 texts per request.
+    # REQUIRED by the institution for the final system. EMBED_BACKEND=endpoint uses it; "local" is only a development fallback.
+    embed_backend: str = "local"
+    embed_base_url: str = ""            # set EMBED_BASE_URL in .env (not committed)
+    embed_api_key: str = ""
+    embed_ca_bundle: str = ""           # path to vm02-ca.crt; TLS verification stays ON
+    embed_model_endpoint: str = "bge-small-en-v1.5"
 
 
 settings = Settings()
@@ -32,17 +40,18 @@ settings = Settings()
 _COUNTER: contextvars.ContextVar = contextvars.ContextVar("model_call_counter", default=None)
 
 
-class _Counter:
+class _Counter:  # (also tracks the split in `kinds`: {"chat": n, "embeddings": m})
     """Counts SUCCESSFUL model requests (HTTP 2xx on chat/completions or embeddings). Nested counters all see every call, so a message-level
     counter and an answer-level counter agree. Retries after a 429 are not counted: they are the same logical call."""
 
     def __init__(self, parent=None):
-        self.count, self.parent = 0, parent
+        self.count, self.parent, self.kinds = 0, parent, {"chat": 0, "embeddings": 0}
 
-    def inc(self):
+    def inc(self, kind: str = "chat"):
         self.count += 1
+        self.kinds[kind] = self.kinds.get(kind, 0) + 1
         if self.parent is not None:
-            self.parent.inc()
+            self.parent.inc(kind)
 
 
 @contextlib.contextmanager
@@ -58,7 +67,7 @@ def count_model_calls():
 def _on_response(response) -> None:
     c = _COUNTER.get()
     if c is not None and 200 <= response.status_code < 300 and response.request.url.path.endswith(("/chat/completions", "/embeddings")):
-        c.inc()
+        c.inc("embeddings" if response.request.url.path.endswith("/embeddings") else "chat")
 
 
 EVENT_HOOKS = {"response": [_on_response]}

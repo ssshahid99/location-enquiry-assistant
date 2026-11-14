@@ -1,10 +1,16 @@
-﻿"""Chroma persistent store (cosine). Metadata is kept for filtering and citations."""
+"""Chroma persistent store (cosine). Metadata is kept for filtering and citations."""
 from pathlib import Path
 
 import chromadb
 
 ROOT = Path(__file__).resolve().parents[3]
-COLLECTION = "lbs_chunks"
+COLLECTION = "lbs_chunks"          # the LOCAL backend (768-d); the endpoint backend (384-d) uses its own collection, never mixed
+
+
+def collection_name() -> str:
+    """One collection per embedding backend: vectors from different models/dimensions must never share an index."""
+    from .embed import backend
+    return COLLECTION if backend() == "local" else f"{COLLECTION}_{backend()}"
 META_KEYS = ["doc_url", "provider", "api", "kind", "licence", "title", "section", "fetched_at", "effective_date"]
 
 
@@ -15,14 +21,14 @@ def client():
 def reset_collection():
     c = client()
     try:
-        c.delete_collection(COLLECTION)
+        c.delete_collection(collection_name())
     except Exception:  # noqa: BLE001 - first build
         pass
-    return c.create_collection(COLLECTION, metadata={"hnsw:space": "cosine"})
+    return c.create_collection(collection_name(), metadata={"hnsw:space": "cosine"})
 
 
 def get_collection():
-    return client().get_collection(COLLECTION)
+    return client().get_collection(collection_name())
 
 
 def add_chunks(col, chunks: list[dict], vectors: list[list[float]], batch: int = 256) -> None:
