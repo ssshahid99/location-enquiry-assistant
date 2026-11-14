@@ -14,7 +14,7 @@ from .pricing_calc import (PriceUnavailable, google_autocomplete_session_units, 
                            usd_to_inr)
 
 _PROMPT = """Extract the pricing workload from the question below. Return ONLY JSON:
-{{"pricing": true|false, "items": [{{"provider": "Ola Maps|Google Maps Platform|Mapbox|HERE|OSM Nominatim",
+{{"pricing": true|false, "items": [{{"provider": "Ola Maps|Google Maps Platform|Mapbox|HERE|Mappls (MapmyIndia)|OSM Nominatim",
  "api": "autocomplete|place_details|reverse_geocode|directions|distance_matrix",
  "requests": <int per month or null>, "sessions": <int per month or null>, "keystrokes_per_session": <int or null>,
  "origins": <int or null>, "destinations": <int or null>, "calls": <int matrix requests per month or null>,
@@ -219,6 +219,8 @@ def price_item(it: dict) -> list[dict]:
     out = []
     if p == "HERE":
         raise PriceUnavailable("HERE list price not verified")
+    if p == "Mappls (MapmyIndia)":
+        raise PriceUnavailable("Mappls list price not published on its official pages; ask Mappls for a quote")
     if p in ("OSM Nominatim", "OSRM"):
         raise PriceUnavailable(f"{p} is free open-source software with no per-request price; the public demo server "
                                "has usage limits (about 1 request per second), heavy use needs self-hosting [OPEN-SOURCE]")
@@ -462,7 +464,10 @@ def run(query: str) -> dict:
         return res
     hints = regex_hints(query)
     items = [reconcile(i, hints) for i in (ex.get("items") or []) if isinstance(i, dict)]
-    if not hints.get("google"):           # "Place Autocomplete", "Routes API" etc. already imply Google; don't fan out
+    # "with and without traffic": the model lists one item per scenario, and reconcile() then sets traffic=None on all of them, so each
+    # priced both tiers -> every row twice and every provider total doubled (seen: Ola 1M requests = 358,200 instead of 179,100).
+    items = list({json.dumps(i, sort_keys=True, default=str): i for i in items}.values())
+    if not hints.get("google"):          # "Place Autocomplete", "Routes API" etc. already imply Google; don't fan out
         items = _expand_unnamed(items, query)
     # A session-based autocomplete item already includes the one Place Details call per session; a separate place_details
     # item for the same provider would double-count it (and produced a bogus extra total in review).
