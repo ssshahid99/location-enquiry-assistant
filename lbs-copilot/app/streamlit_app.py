@@ -1,6 +1,7 @@
 """Demo UI. Run from the project root:
     $env:PYTHONPATH=".;src"; streamlit run app/streamlit_app.py
-Tabs: Ask (direct grounded answers) | Cases (router + Planner/Executor/Critic agent) | Approvals (one authorised human decides).
+Tabs: Chat (one Planner picks llm | rag | escalation per message) | Direct answer | Case workflow (older agent) | Approvals (one authorised human decides,
+with a decision log and the sandbox records) | Traces.
 Nothing is ever sent externally: approving applies an internal update only (case status, owner, next action, tracker)."""
 import sys
 from pathlib import Path
@@ -11,6 +12,8 @@ sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 import streamlit as st  # noqa: E402
 
 from lbs_rag.agent import orchestrator  # noqa: E402
+from lbs_rag.chat import sandbox as sandbox_store  # noqa: E402
+from lbs_rag.chat import state as conv_state  # noqa: E402
 from lbs_rag.chat.chat import chat as chat_turn  # noqa: E402
 from lbs_rag.generate import meta  # noqa: E402
 from lbs_rag.generate.answer import answer  # noqa: E402
@@ -36,6 +39,7 @@ for _ex in meta.EXAMPLES:
     if st.sidebar.button(_ex, key="ex_" + _ex[:30]):
         st.session_state["q"] = _ex
         st.session_state["case_msg"] = _ex
+        st.session_state["chat_example"] = _ex          # the Chat tab sends it as the next message
 
 chat_tab, ask_tab, cases_tab, approve_tab, trace_tab = st.tabs(["Chat", "Direct answer", "Case workflow (older)", "Approvals", "Traces"])
 
@@ -92,6 +96,7 @@ with chat_tab:
         st.session_state["chat_log"] = []
     log = st.session_state.setdefault("chat_log", [])
     new_msg = st.chat_input("Type the customer's message (e.g. 'Ola Directions free tier?', 'Hello', 'I want to talk to a person')")
+    new_msg = new_msg or st.session_state.pop("chat_example", None)          # an example clicked in the sidebar is sent as a message
     if new_msg:
         with st.spinner("Planner is choosing a route..."):
             _c = repo.connect()
@@ -103,6 +108,23 @@ with chat_tab:
         log.append({"user": new_msg, "r": _r})
     if st.session_state.get("conv_id"):
         hc1.caption(f"Conversation `{st.session_state['conv_id']}` (state is saved: facts, questions asked, summary)")
+        _sc = repo.connect()
+        try:
+            _st = conv_state.load(_sc, st.session_state["conv_id"])
+        finally:
+            _sc.close()
+        with st.expander("What the system remembers about this conversation", expanded=False):
+            st.write("**Summary:**", _st["summary"] or "(nothing yet)")
+            st.write("**Known facts:**", _st["facts"] or "(none)")
+            if _st["asked"]:
+                st.write("**Questions already asked:**")
+                for _f, _a in _st["asked"].items():
+                    st.write(f"- {'answered' if _a['answered'] else 'waiting'}: {_a['question']}")
+            if _st["pending"]:
+                st.write("**Original question waiting for those details:**", _st["pending"]["question"])
+    if log:
+        _routes = [t["r"]["route"] for t in log]
+        st.caption("Routes this conversation: " + ", ".join(f"{k} x{_routes.count(k)}" for k in dict.fromkeys(_routes)))
     for turn in log:
         with st.chat_message("user"):
             st.markdown(turn["user"])
@@ -113,6 +135,15 @@ with chat_tab:
             show_sources(r.get("citations", []))
             if r.get("action_id") or r.get("record_action_id"):
                 st.warning("Waiting for human approval in the Approvals tab. Nothing has been sent or changed.")
+            _pru = r["outputs"]["proposed_record_update"]
+            if _pru["applicable"]:
+                st.markdown(f"**Proposed update to `{_pru['proposal']['record_id']}`** (pending approval)")
+                st.table([{"field": k, "proposed value": v} for k, v in _pru["proposal"]["fields"].items()])
+            _rl = r["outputs"]["responsible_role"]
+            st.caption(f"Owner: {_rl['owner']} ({_rl['team']}) | severity {_rl['severity']} | escalate: {'yes' if _rl['should_escalate'] else 'no'}")
+            _qs = r["outputs"]["clarifying_questions"]
+            if _qs["needed"]:
+                st.info("Questions asked: " + " | ".join(q["text"] for q in _qs["questions"]))
             if r["schema_errors"]:
                 st.error("Output failed schema validation: " + "; ".join(r["schema_errors"][:3]))
             with st.expander("Structured outputs (the 7 schema-valid outputs)"):
@@ -335,8 +366,9 @@ with cases_tab:
 
 # ------------------------------------------------------------------------------------------------ Approvals
 with approve_tab:
-    st.caption("Everything consequential waits here. One authorised approver is enough. Approving applies an internal update only "
-               "(case status, owner, next action, tracker); the system never sends anything externally.")
+    st.caption("Everything consequential waits here: escalations, sandbox record updates, replies. One authorised approver is enough, and every "
+               "decision is logged below. Approving applies an internal update only (case status, owner, next action, tracker, sandbox record); "
+               "the system never sends anything externally.")
     con = repo.connect()
     try:
         pending = repo.list_pending(con)
@@ -404,6 +436,21 @@ with approve_tab:
                     with st.expander("Case timeline"):
                         for ev in repo.cases.case_timeline(con, p["case_id"]):
                             st.write(f"{ev['ts']} - {ev['actor']} - {ev['event']}")
+        with st.expander("Decision log (who decided what, when, and the final change)"):
+            _dl = repo.cases.decision_log(con, limit=100)
+            if not _dl:
+                st.write("No decisions yet.")
+            else:
+                st.dataframe([{"action": d["action_id"], "type": d["type"], "decision": d["decision"], "reviewer": d["reviewer"],
+                               "decided at": d["decided_at"], "edited by reviewer": d["edited"], "note": d["note"] or "",
+                               "applied diff": str(d["final_diff"]) if d["final_diff"] else ""} for d in _dl], use_container_width=True)
+        with st.expander("Sandbox records (changed only by approved updates)"):
+            _rows = con.execute("SELECT record_id, fields_json, updated_at, last_action_id FROM sandbox_records ORDER BY updated_at DESC").fetchall()
+            if not _rows:
+                st.write("No sandbox record has been changed yet.")
+            else:
+                st.dataframe([{"record": r_["record_id"], "fields": r_["fields_json"], "updated": r_["updated_at"], "by action": r_["last_action_id"]}
+                              for r_ in _rows], use_container_width=True)
     finally:
         con.close()
 

@@ -1,5 +1,9 @@
 """FastAPI server. Run: uvicorn lbs_rag.api.server:app --reload  (PYTHONPATH must include the project root and src).
 
+/chat                      the chatbot: the Planner picks ONE route (llm | rag | escalation) per message; returns the 7 schema-valid outputs
+/chat/{conversation_id}    the saved conversation state (history, known facts, questions asked, summary)
+/actions/log               every human decision: reviewer, time, approve/reject, final content and applied diff
+/sandbox/records/{id}      a sandbox ticket / opportunity (only written after a person approves a proposed update)
 /answer                    direct grounded answer (RAG)
 /cases/message             the router + agent: simple -> answer, incident / missing info / sales -> case, contract / security -> person
 /cases/{id}/reply          a customer reply on an open case (resume)
@@ -12,12 +16,15 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from ..agent import orchestrator
+from ..chat import sandbox
+from ..chat import state as conv_state
+from ..chat.chat import chat as chat_turn
 from ..generate.answer import answer
 from ..safety.pii import redact
 from ..store import cases, customers, handlers, review, traces
 from ..store import repositories as repo
 
-app = FastAPI(title="Location Services Copilot", version="0.3")
+app = FastAPI(title="Location Services Copilot", version="0.5")
 
 
 class AskIn(BaseModel):
@@ -63,6 +70,56 @@ def health() -> dict:
 def ask(body: AskIn) -> dict:
     clean = redact(body.query)             # PII is removed before anything is stored or sent to the model
     return answer(clean, rewrite=body.rewrite)
+
+
+class ChatIn(BaseModel):
+    message: str = Field(min_length=1, max_length=6000)
+    conversation_id: str | None = Field(default=None, max_length=40, pattern=r"^[A-Za-z0-9_-]+$")
+    customer: str = Field(default="unknown", max_length=120)
+
+
+@app.post("/chat")
+def chat_message(body: ChatIn) -> dict:
+    """One chat turn. Escalations and sandbox record updates are only PROPOSED (pending in /actions/pending); nothing is sent or changed."""
+    con = _db()
+    try:
+        r = chat_turn(con, body.message, body.conversation_id, customer=body.customer)
+    finally:
+        con.close()
+    keep = ("conv_id", "trace_id", "route", "route_reason", "route_source", "text", "outputs", "schema_errors", "citations", "tool_calls",
+            "model_calls", "new_facts", "action_id", "case_id", "record_action_id")
+    return {k: r[k] for k in keep if k in r}
+
+
+@app.get("/chat/{conversation_id}")
+def chat_state(conversation_id: str) -> dict:
+    con = _db()
+    try:
+        if not conv_state.exists(con, conversation_id):
+            raise HTTPException(status_code=404, detail="conversation not found")
+        return conv_state.load(con, conversation_id)
+    finally:
+        con.close()
+
+
+@app.get("/actions/log")
+def actions_log(limit: int = 100) -> list[dict]:
+    con = _db()
+    try:
+        return cases.decision_log(con, limit=min(max(limit, 1), 500))
+    finally:
+        con.close()
+
+
+@app.get("/sandbox/records/{record_id}")
+def sandbox_record(record_id: str) -> dict:
+    con = _db()
+    try:
+        if not sandbox.SANDBOX_ID.match(record_id):
+            raise HTTPException(status_code=404, detail="not a sandbox record id")
+        return {"record_id": record_id, "fields": sandbox.get(con, record_id)}
+    finally:
+        con.close()
 
 
 @app.get("/approvers")

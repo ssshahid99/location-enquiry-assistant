@@ -44,6 +44,7 @@ class CalculatorOut(BaseModel):
     unverified: list[str] = []
     errors: list[str] = []
     assumptions: list[str] = []
+    source_urls: list[str] = []
 
 
 class UpdateRecordIn(BaseModel):
@@ -135,7 +136,10 @@ def build() -> Registry:
         from ..tools import pricing_intent
         p = pricing_intent.run(a.question)
         notes = sorted({n for r in p["results"] for n in (r.get("notes") or [])}) if p["results"] else []
-        return {"results": p["results"], "unverified": p["unverified"], "errors": p["errors"], "assumptions": notes}
+        from ..tools.pricing_calc import load_pricing
+        src = load_pricing().get("sources", {})
+        urls = list(dict.fromkeys(u for r in p["results"] for u in src.get(r.get("provider"), [])))
+        return {"results": p["results"], "unverified": p["unverified"], "errors": p["errors"], "assumptions": notes, "source_urls": urls}
 
     @reg.register("update_record", UpdateRecordIn, UpdateRecordOut)
     def _update_record(a: UpdateRecordIn, ctx: dict) -> dict:

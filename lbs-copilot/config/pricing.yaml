@@ -9,6 +9,12 @@ fx:
   source: FBIL via rbi.org.in
   as_of: 2026-11-06
 
+# Official price pages the SKU tiers were read from (cited by the calculator report; fetched snapshot data/raw/2026-11-08).
+sources:
+  Ola Maps: [https://maps.olakrutrim.com/pricing/details, https://maps.olakrutrim.com/pricing/update-2026]
+  Google Maps Platform: [https://developers.google.com/maps/billing-and-pricing/pricing-india]
+  Mapbox: [https://www.mapbox.com/pricing]
+
 ola:
   distance_matrix_free_counts: pairs   # pairs | requests - UNCONFIRMED, ask Ola (rate card says "100K free calls per API")
 

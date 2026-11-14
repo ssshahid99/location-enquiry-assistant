@@ -245,6 +245,25 @@ def list_pending(con, case_id: str | None = None) -> list[dict]:
     return [get_action(con, r["id"]) for r in con.execute(q + " ORDER BY id", args)]
 
 
+def decision_log(con, limit: int = 200) -> list[dict]:
+    """Every human decision, newest first: who decided (reviewer), when, approve/reject, the note, whether the approver edited it, and the FINAL
+    content (the edited version if there is one) with the field-level diff that was actually applied (record updates). Read-only."""
+    out = []
+    for r in con.execute("SELECT id FROM proposed_actions WHERE status IN ('approved','rejected') ORDER BY decided_at DESC, id DESC LIMIT ?", (limit,)):
+        a = get_action(con, r["id"])
+        res = a.get("applied_result")
+        try:
+            res = json.loads(res) if res else None
+        except (TypeError, ValueError):
+            res = {"raw": res}
+        final = a["edited_payload"] or a["payload"]
+        out.append({"action_id": a["id"], "type": a["type"], "case_id": a["case_id"], "reviewer": a["approver"], "decided_at": a["decided_at"],
+                    "decision": a["status"], "note": a.get("decision_note"), "edited": bool(a["edited_payload"]), "final": final,
+                    "final_diff": (res or {}).get("applied_diff") if isinstance(res, dict) else None,
+                    "proposed_diff": a["payload"].get("diff"), "applied_at": a.get("applied_at")})
+    return out
+
+
 def close_case(con, case_id: str, *, approver: str, note: str) -> dict:
     """Close a case. An operational update, so only a listed human may do it, with a written resolution. Anything still waiting for
     approval on the case is CANCELLED (never applied), and the case history and timeline record who closed it and why."""

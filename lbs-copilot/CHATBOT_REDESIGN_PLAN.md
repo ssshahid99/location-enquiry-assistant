@@ -85,3 +85,12 @@ Measured once on the core scoreboard (not tuned on): route accuracy 93.8%, escal
 to unseen wording, and the model fallback did not fix it (it added false escalations, so it is OFF: LBS_ESC_MODEL=1 to try again). Needs more labelled escalation examples (only 20 exist).
 Not done yet: Activities 7-10 reports (MinHash near-duplicates, 2+ chunk sizes recall@5, four-variant retrieval table, MRR per bucket), 30 hand-calculated calculator cases,
 state "do not re-ask" scoring on the history bucket, 20-action review-queue end-to-end test, API server endpoint for chat.
+
+## 9. Update (later the same day): three more items done
+- Activity 11: `tests/test_calculator_hand.py` has 30 hand-calculated price cases (tiers, free quotas, USD to INR, beyond the last tier, Ola pairs vs requests) plus determinism and
+  "assumptions and source pages on every output" checks (`pricing_calc.report()`, price pages listed in `config/pricing.yaml`). Three of my own paper calculations were wrong and the code was right.
+- Activity 17: `tests/test_review_queue_e2e.py` runs 20 consequential actions (10 escalations, 10 sandbox updates) through the chat: all held, then approve / edit / reject, every decision
+  logged with reviewer, time, decision, note and the final applied diff (`cases.decision_log`).
+- Chat endpoint: `POST /chat`, `GET /chat/{id}`, `GET /actions/log`, `GET /sandbox/records/{id}` (`tests/test_api_chat.py`).
+- UI: example buttons send to the chat, a "what the system remembers" panel, proposed record diffs and owner / severity under each answer, a decision log and a sandbox-records viewer in Approvals.
+658 tests pass.

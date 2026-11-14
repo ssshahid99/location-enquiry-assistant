@@ -81,6 +81,24 @@ def quote(sku_id: str, units: int, *, tier_scale: int = 1) -> Quote:
     return q
 
 
+def report(q: Quote) -> dict:
+    """The calculator's machine-readable output (Activity 11): the numbers, the arithmetic, the assumptions and the price pages they came from.
+    Pure function of the Quote and config/pricing.yaml, so the same input gives the same bytes (see json.dumps(..., sort_keys=True))."""
+    p = load_pricing()
+    assumptions = ["Tiers are marginal (each tier's rate applies only to the units inside it); the free allowance is the first tier.",
+                   "List prices from the vendor price pages in source_urls; no taxes, discounts or committed-use terms."]
+    if q.currency == "USD":
+        fx = p["fx"]
+        assumptions.append(f"USD converted at 1 USD = {fx['usd_inr']} INR ({fx['source']}, {fx['as_of']}); INR is rounded half-up to the paisa.")
+    assumptions += q.notes
+    return {"sku": q.sku, "provider": q.provider, "currency": q.currency, "units": q.units, "cost": str(q.cost), "cost_inr": str(q.cost_inr),
+            "free_units": q.free_units, "billable_units": q.billable_units, "contact_sales": q.contact_sales,
+            "contact_sales_units": q.contact_sales_units,
+            "breakdown": [{"from": b["from"], "to": b["to"], "units": b["units"], "rate": str(b["rate"]), "per": b["per"], "cost": str(b["cost"])}
+                          for b in q.breakdown],
+            "assumptions": assumptions, "source_urls": list(p.get("sources", {}).get(q.provider, []))}
+
+
 # ---- unit helpers: turning a described workload into billable units ----
 
 def matrix_elements(origins: int, destinations: int, calls: int = 1) -> int:
