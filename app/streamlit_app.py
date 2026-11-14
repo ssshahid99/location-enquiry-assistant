@@ -1,4 +1,4 @@
-﻿"""Demo UI. Run from the project root:
+"""Demo UI. Run from the project root:
     $env:PYTHONPATH=".;src"; streamlit run app/streamlit_app.py
 Tabs: Ask (direct grounded answers) | Cases (router + Planner/Executor/Critic agent) | Approvals (one authorised human decides).
 Nothing is ever sent externally: approving applies an internal update only (case status, owner, next action, tracker)."""
@@ -316,7 +316,7 @@ with approve_tab:
                     draft = st.text_area("Draft reply (edit before approving; approving does NOT send it)", value=pl.get("draft", ""), height=200, key=f"d{p['id']}")
                     edited = {**pl, "draft": draft} if draft != pl.get("draft", "") else None
                 elif kind == "escalation":
-                    st.write(f"Category **{pl.get('category')}** | suggested owner: {pl.get('owner')} | mode: {pl.get('mode', '-')} | {pl.get('policy_status', '')}")
+                    st.write(f"Category **{pl.get('category')}** | suggested owner: {pl.get('owner')} | severity {pl.get('severity', '-')} | team {pl.get('owner_team', '-')} | mode: {pl.get('mode', '-')} | {pl.get('policy_status', '')}")
                     st.write("Customer query:", pl.get("customer_query"))
                     st.write("Ask the customer to collect:", ", ".join(pl.get("collect", []) or []))
                     if pl.get("missing_evidence"):

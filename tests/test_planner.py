@@ -125,7 +125,7 @@ def test_outage_recommends_escalate_now_with_evidence():
     r = P.plan("PRODUCTION: Ola Distance Matrix has returned 5xx for all requests across Mumbai since 14:05 IST.")
     e = r["escalation"]
     assert e["recommend"] and e["category"] == "production_incident" and e["mode"] == "now"
-    assert e["missing_evidence"] == [] and "approved policy source" in e["policy_status"]
+    assert e["missing_evidence"] == [] and "approved policy SC-02" in e["policy_status"] and e["severity"] in ("SEV1", "SEV2", "SEV3", "SEV4")
 
 
 def test_data_quality_recommends_collecting_evidence_first():

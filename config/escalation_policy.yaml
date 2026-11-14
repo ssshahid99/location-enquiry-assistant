@@ -1,0 +1,35 @@
+# Escalation policy SC-02: severity and owning team per escalation category.
+# Source: the `escalation` labels of ground truth v2.4 (should_escalate, severity SEV1-4, owner, reason), which Deepshikha confirmed on
+# 2026-11-14 ARE the approved escalation policy. Derived from the 22 escalating records and the 499/521 non-escalating ones:
+#   SEV1 = customer production is down (all requests failing, whole system down)          SEV2 = production impaired, credential exposure, billing outage
+#   SEV3 = security/billing suspicion, data correction                                    SEV4 = no urgency: sales / contract hand-off, routine support
+# Owners (internal teams): Support L1, Support L2, Maps engineering, Account team (Sales).
+# `rules` are checked in order inside a category; the first whose `when` regex matches the message (case-insensitive) wins, else `default`.
+policy_version: "SC-02 (ground truth v2.4 escalation labels, adopted 2026-11-14)"
+
+categories:
+  production_incident:
+    default: {severity: SEV2, owner: Maps engineering}
+    rules:
+      - {when: '\b429\b|rate[- ]?limit|quota|too many requests', then: {severity: SEV2, owner: Account team (Sales)},
+         upgrade_when: 'whole .{0,25}(system|stack|platform)? ?down|dispatch system|all (our )?(requests|orders|users)|\b\d{2,3}\s?% of', upgrade_to: SEV1}
+      - {when: '\b5xx\b|\b5\d\d\b.{0,40}\ball requests|all requests|every request|production .{0,20}down|eta engine', then: {severity: SEV1, owner: Maps engineering}}
+  billing_incident:
+    default: {severity: SEV2, owner: Account team (Sales)}
+  security_incident:
+    default: {severity: SEV3, owner: Support L2}
+    rules:
+      - {when: 'pushed|github|public repo|exposed|leak|credential|compromis', then: {severity: SEV2, owner: Support L2}}
+  accuracy_regression:
+    default: {severity: SEV2, owner: Maps engineering}
+  data_quality:
+    default: {severity: SEV3, owner: Maps engineering}
+    rules:
+      - {when: 'regression|sustained|lower than actual|higher than actual|\b\d{2}\s?% (lower|higher)', then: {severity: SEV2, owner: Maps engineering}}
+  contract_request:
+    default: {severity: SEV4, owner: Account team (Sales)}
+
+# Used when nothing escalates: who normally owns the case and how urgent it is.
+non_escalating:
+  support: {severity: SEV4, owner: Support L1}
+  sales: {severity: SEV4, owner: Account team (Sales)}

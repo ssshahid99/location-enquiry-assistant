@@ -18,6 +18,7 @@ from pathlib import Path
 import yaml
 
 from ..retrieve.query_analyzer import detect
+from ..safety import escalation_policy
 from ..safety.escalation import check as escalation_check
 from ..store import cases
 from ..tools.pricing_intent import has_volume
@@ -223,11 +224,15 @@ def plan(message: str, *, known_facts: dict[str, str] | None = None, known_workf
     steps.append({"step": "gap_analysis", "output": {"missing_required": [i["key"] for i in missing_required],
                                                       "questions": [q["key"] for q in questions], "needs_human": need_human}})
 
-    # escalation recommendation (evidence-backed; PROPOSED policy until the approved source exists)
+    # escalation recommendation (evidence-backed); severity and owning team come from the approved policy SC-02 (escalation_policy.py)
     esc_rule = escalation_check(message)
-    escalation = {"recommend": False, "policy_status": "proposed; approved policy source (SC-02) not supplied"}
+    base_pol = escalation_policy.assess(message, None, cls["workflow"])
+    escalation = {"recommend": False, "policy_status": f"approved policy {escalation_policy.version()}",
+                  "severity": base_pol["severity"], "owner_team": base_pol["owner"]}
     if esc_rule["escalate"]:
         cat = esc_rule["category"]
+        pol = escalation_policy.assess(message, cat, cls["workflow"])
+        escalation.update({"severity": pol["severity"], "owner_team": pol["owner"], "policy_basis": pol["basis"]})
         need = cfg["escalation"]["evidence_needed"].get(cat, [])
         missing_ev = [k for k in need if k not in merged]
         escalation.update({"recommend": True, "category": cat, "owner": esc_rule["owner"], "collect": esc_rule["collect"],
@@ -245,7 +250,7 @@ def plan(message: str, *, known_facts: dict[str, str] | None = None, known_workf
                                                               "workflow": cls["workflow"], "urgency": cls["urgency"]}})
     if escalation["recommend"]:
         proposals.append({"type": "escalation", "payload": {k: escalation.get(k) for k in
-                          ("category", "owner", "collect", "mode", "evidence", "missing_evidence", "policy_status")} | {"customer_query": message}})
+                          ("category", "owner", "owner_team", "severity", "collect", "mode", "evidence", "missing_evidence", "policy_status", "policy_basis")} | {"customer_query": message}})
     return {**cls, "known_facts": merged, "checklist": checklist, "missing_required": [i["key"] for i in missing_required],
             "questions": questions, "needs_human_followup": need_human,
             "ready_to_proceed": cls["workflow"] != "unclear" and not missing_required and not need_human,
