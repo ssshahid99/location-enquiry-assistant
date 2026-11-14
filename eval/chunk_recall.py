@@ -44,7 +44,8 @@ def main() -> None:
     ap.add_argument("--nonprice", action="store_true", help="skip pricing intents (the calculator handles those)")
     a = ap.parse_args()
     ks = [int(x) for x in a.k.split(",")]
-    cit = pd.read_csv(ROOT / "data" / "ground_truth" / "gt_citations.csv")
+    gdir = ROOT / "data" / "ground_truth"
+    cit = pd.read_csv(gdir / ("gt_v3_citations.csv" if (gdir / "gt_v3_citations.csv").exists() else "gt_citations.csv"))
     cit = cit[cit["quote_or_summary"] == "verbatim"]
     by_doc = defaultdict(list)
     for c in load_chunks():

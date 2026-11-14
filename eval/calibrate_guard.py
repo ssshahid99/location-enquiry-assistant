@@ -33,7 +33,7 @@ def sim(q: str) -> float:
 
 
 def main() -> None:
-    items = [i for i in load_items("eval") if not guard.has_strong_domain_term(i["Question"])]
+    items = [i for i in load_items("working") if not guard.has_strong_domain_term(i["Question"])]
     real = sorted((sim(i["Question"]), i["ID"], i["Question"][:90]) for i in items)
     off = sorted((sim(q), q) for q in PROBES)
     print(f"development questions without a strong domain term: {len(real)}")

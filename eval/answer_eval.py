@@ -1,4 +1,4 @@
-﻿"""Answer eval on the eval split (holdout untouched): correctness, citation quality, abstention, vs a no-RAG baseline.
+"""Answer eval on the eval split (holdout untouched): correctness, citation quality, abstention, vs a no-RAG baseline.
 
 Metrics
   number_recall   share of ground-truth currency figures that appear in the answer (deterministic)
@@ -135,6 +135,7 @@ def run_one(item: dict, system: str) -> dict:
             "judge": judge(item["Question"], str(item["Answer"]), a["text"]),
             "cite_n": len(a["citations"]), "cite_gold_hit": bool(cited_urls & gold) if a["citations"] else None,
             "cite_sup": sup, "cite_tot": tot, "uncited": (not a["citations"]) and not a["abstained"],
+            "tier": item.get("tier"), "verif": item.get("verification_status"), "model_calls": a.get("model_calls"),
             "here_violation": here_violation(item, a["text"]),
             "expect_abstain_here": "HERE list price not verified" in str(item.get("flag", "")),
             "sec": round(time.time() - t, 1)}
@@ -159,6 +160,12 @@ def summarize(rows: list[dict], system: str) -> None:
         print(f"cite_gold_hit        {sum(gh) / len(gh):.3f}   (of {len(gh)} answers with citations)" if gh else "cite_gold_hit n/a")
         print(f"uncited answers      {sum(x['uncited'] for x in r)}   abstained {sum(x['abstained'] for x in r)}")
     print(f"HERE price violations {sum(x['here_violation'] for x in r)} of {sum(x['expect_abstain_here'] for x in r)} HERE-unverified items")
+    for key, lab in (("tier", "tier"), ("verif", "verification")):          # report by tier: core = scoreboard, working = development pool
+        groups: dict[str, list] = {}
+        for x in r:
+            groups.setdefault(str(x.get(key)), []).append(x)
+        print(f"by {lab}: " + " | ".join(f"{g} n={len(v)} correct {sum(y['judge'] == 'correct' for y in v) / len(v):.0%} "
+                                       f"abstained {sum(y['abstained'] for y in v) / len(v):.0%}" for g, v in sorted(groups.items())))
     by_intent: dict[str, list] = {}
     for x in r:
         by_intent.setdefault(x["intent"], []).append(x["judge"] == "correct")
@@ -175,11 +182,16 @@ def main() -> None:
     ap.add_argument("--rerank", action="store_true")
     ap.add_argument("--k", type=int, default=6, help="chunks sent to the model")
     ap.add_argument("--pricing-only", action="store_true", help="only pricing_* intents (mostly code-answered, fast)")
+    ap.add_argument("--dev-nonprice", action="store_true",
+                    help="tuning subset: every non-core item whose intent is not pricing_* (core stays an untouched scoreboard)")
     a = ap.parse_args()
     RETRIEVAL_OPTS.update(rewrite=not a.no_rewrite, rerank=a.rerank, k=a.k)
     items = load_items("eval")
     if a.pricing_only:
         items = [i for i in items if str(i["intent"]).startswith("pricing")]
+    if a.dev_nonprice:
+        items = [i for i in items if i.get("tier") != "core" and not str(i["intent"]).startswith("pricing")]
+        a.n = len(items)
     step = max(1, len(items) // a.n)                  # deterministic spread across intents
     items = items[::step][:a.n]
     systems = ["rag", "baseline"] if a.system == "both" else [a.system]

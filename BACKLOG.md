@@ -38,6 +38,8 @@ per-step traces, FastAPI, Streamlit UI (Ask | Cases | Approvals), evaluation scr
 - [ ] Mapbox price tables parse one cell per line (numbers come from config); combined "Autocomplete + Place Details" totals not summed; price sweep not yet covering Mapbox standard Search Box / Autofill / Place Details Pro / Ola DM "requests" mode.
 - [ ] Draft replies are templates (no model wording polish); optional.
 
+- [x] (2026-11-09, found by Deepshikha in the UI) "compare direction api price between ola map and google maps" priced only Ola: with no volume the calculator is skipped and the model answers from retrieved pages. Fixed with `tools/rate_card.py` (code-written list-price card from pricing.yaml, no model call; 5 tests). Not covered by the 500 ground-truth questions (0 of 500 trigger it), so the evals cannot show it: add volume-free price comparisons to the tester set.
+
 ## D. Project-document deliverables and housekeeping
 - [ ] Baseline evaluation write-up (standalone LLM vs RAG vs agent): numbers exist (`eval/baseline_llm.py`, 60-question A/B), not written up for the team.
 - [ ] Cost-accuracy trade-off write-up (minutes' consideration): routing mix (~68% RAG / 30% agent / 1% person), model calls per route (agent chain adds none beyond the RAG call), latency (from the chain eval).

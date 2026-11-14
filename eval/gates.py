@@ -123,7 +123,7 @@ def main() -> None:
     ap.add_argument("--skip-critic", action="store_true")
     a = ap.parse_args()
 
-    items = load_items("eval") + (load_items("holdout") if a.include_holdout else [])
+    items = load_items("eval") + (load_items("holdout", allow_holdout=True) if a.include_holdout else [])
     path, rows = load_report(a.report)
     s = summarise_rows(rows) if rows else None
     if a.set_baseline:
