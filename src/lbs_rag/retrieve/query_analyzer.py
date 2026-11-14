@@ -1,4 +1,4 @@
-﻿"""Query analysis: rule-based provider/api detection + optional LLM rewrite (Qwen3-8B)."""
+"""Query analysis: rule-based provider/api detection + optional LLM rewrite (Qwen3-8B)."""
 import json
 import re
 
@@ -11,6 +11,7 @@ PROVIDER_KEYWORDS = {
     "Ola Maps": [r"\bola\b", "krutrim"],
     "OSRM": ["osrm"],
     "OSM Nominatim": ["nominatim", "openstreetmap", r"\bosm\b"],
+    "Mappls (MapmyIndia)": ["mappls", "mapmyindia", "map my india"],
 }
 API_KEYWORDS = {
     "Distance Matrix": ["distance matrix", "matrix", "distancematrix"],
@@ -35,7 +36,7 @@ def detect(query: str) -> dict:
 
 
 _PROMPT = """You rewrite user questions into search queries for a documentation index about location/maps APIs \
-(Google Maps Platform, Mapbox, HERE, Ola Maps, OSRM, Nominatim) covering pricing, limits, errors and usage.
+(Google Maps Platform, Mapbox, HERE, Ola Maps, Mappls, OSRM, Nominatim) covering pricing, limits, errors and usage.
 Return ONLY JSON: {{"queries": ["...", "..."]}} with 1-3 short keyword-rich queries. Rules: keep every number, unit, \
 API name and provider name exactly as written; expand abbreviations; if the question compares providers, give one query per \
 provider; do not answer the question.

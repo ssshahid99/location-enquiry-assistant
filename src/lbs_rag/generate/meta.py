@@ -41,7 +41,7 @@ _SCOPE = re.compile(
     r"which (providers|vendors|apis|services|companies|maps) (do|does|can|are) (you|this|the system|covered|supported)|"
     r"what (providers|vendors|apis|services) (do|does|can) (you|this|the system) (cover|support|know|handle)|"
     r"(do|can|does) (you|this|the system) (cover|support|know about|handle) (all )?(providers|vendors)|"
-    r"(do|can) you (cover|support|know about|handle)\b.{0,40}(google|mapbox|\bhere\b|\bola\b|osrm|nominatim|tomtom|azure|esri|mappls)", re.I)
+    r"(do|can) you (cover|support|know about|handle)\b.{0,40}(google|mapbox|\bhere\b|\bola\b|osrm|nominatim|tomtom|azure|esri)", re.I)
 _LIMITS = re.compile(
     r"what (can'?t|cannot|can not|don'?t|do not) you|your (limitations|limits|weaknesses)|what are your limits|"
     r"are you (accurate|reliable|correct|always right)|how accurate (are|is) you|can (i|we) trust you|how reliable|"
@@ -85,8 +85,8 @@ def _examples() -> str:
 
 
 def _providers() -> str:
-    return ("Google Maps Platform, Mapbox, Ola Maps, HERE, OSM Nominatim and OSRM. HERE's list prices could not be verified "
-            "(its pricing page did not load), so I will not quote HERE prices. Nominatim and OSRM are free open-source "
+    return ("Google Maps Platform, Mapbox, Ola Maps, Mappls (MapmyIndia), HERE, OSM Nominatim and OSRM. HERE's list prices could not be verified "
+            "(its pricing page did not load), so I will not quote HERE prices; Mappls does not publish list prices on its official pages, so I will not quote those either. Nominatim and OSRM are free open-source "
             "software; I can explain their usage limits but they have no per-request price.")
 
 
@@ -104,7 +104,7 @@ def respond(query: str) -> tuple[str, str] | None:
         return ("Goodbye! Come back any time you have a question about location APIs.", kind)
     if kind == "scope":
         return (f"I cover: {_providers()}\n\nTopics: Directions/routing, Distance Matrix, Autocomplete and place search, and reverse "
-                "geocoding. For any other provider (for example TomTom, Azure Maps, Esri or Mappls) I will say I have no verified "
+                "geocoding. For any other provider (for example TomTom, Azure Maps or Esri) I will say I have no verified "
                 "information.", kind)
     if kind == "limits":
         return (

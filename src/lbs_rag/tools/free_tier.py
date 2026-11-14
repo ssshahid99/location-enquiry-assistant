@@ -69,6 +69,7 @@ def allowance_text(apis: set[str]) -> str:
         else:
             lines.append(f"- {prov} ({note.replace('{cap}', '')}): " + "; ".join(f"{_label(s)} {c:,} {sku['unit']}s" for s, sku, c in rows) + ".")
     lines.append("- HERE: the free allowance could not be verified (its pricing page did not render); check HERE's plan page.")
+    lines.append("- Mappls (MapmyIndia): no free allowance or price list is published on its official pages; ask Mappls.")
     lines.append("- OSRM / OSM Nominatim: open-source software; the public servers are for light, non-commercial use "
                  "(about 1 request per second), so they are not a production free tier.")
     return "Free monthly allowances (from the verified price lists):\n" + "\n".join(lines)

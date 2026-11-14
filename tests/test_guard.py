@@ -97,7 +97,7 @@ def test_domain_gate_subject_list_similarity_and_strong_terms():
     assert guard.domain_gate("Tell me a joke", None)["category"] == "off_topic"
     assert guard.domain_gate("something totally unrelated about nothing", 0.30)["category"] == "off_topic"   # below threshold
     assert guard.domain_gate("Why does the Directions API return ZERO_RESULTS?", 0.1) is None    # strong domain term wins
-    assert guard.domain_gate("Does it work for rural India?", 0.506) is None                      # vague but legitimate (calibrated)
+    assert guard.domain_gate("Does it work for rural India?", guard.DOMAIN_SIM_MIN + 0.03) is None   # vague but legitimate: just above the per-backend cut-off
     assert guard.domain_gate("Write Python code to call the Google Maps API", 0.4) is None        # strong term: allowed to proceed
 
 

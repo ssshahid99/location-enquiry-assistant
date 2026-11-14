@@ -13,7 +13,7 @@ from ..retrieve.hybrid import retrieve
 from ..safety import escalation
 from ..safety.pii import PUBLIC_EMAILS, redact_with_report
 from ..store import repositories as repo
-from ..tools import facts, free_tier, pricing_intent
+from ..tools import facts, free_tier, pricing_intent, rate_card
 from . import grounding, guard, meta
 from .abstain import looks_abstained, pricing_blocked, unsupported_providers
 from .prompts import SYSTEM, build_user
@@ -103,7 +103,7 @@ def _answer(query: str, *, k: int = TOP_K, persist: bool = True, rewrite: bool =
     if oos and not has_known:   # only providers outside the knowledge base: don't retrieve-and-improvise
         return _finish(query, {
             "text": f"I don't have verified information about {', '.join(oos)}. This copilot covers Google Maps Platform, "
-                    "Mapbox, HERE, Ola Maps, OSM Nominatim and OSRM. For other providers, please check the vendor's own "
+                    "Mapbox, HERE, Ola Maps, Mappls (MapmyIndia), OSM Nominatim and OSRM. For other providers, please check the vendor's own "
                     "documentation or ask the vendor for a quote.",
             "citations": [], "tool_calls": [], "abstained": True, "escalate": False,
             "reason": f"out_of_scope_provider: {', '.join(oos)}", "trace_id": trace_id, "retrieved": []}, esc, persist)
@@ -131,14 +131,21 @@ def _answer(query: str, *, k: int = TOP_K, persist: bool = True, rewrite: bool =
 
     no_answer = model_refused = ungrounded = False
     removed_claims: list[str] = []
+    removed_why: list[str] = []
     force_cites: list[int] = []
     ft = free_tier.answer_text(query) if not esc["escalate"] else None
+    rc = rate_card.answer_text(query) if not (ft or esc["escalate"] or pricing["pricing"]) else None
     if ft:
         # free-allowance table / workload arithmetic: code writes the whole answer, with the price pages as sources
         fake = {"pricing": True, "results": [{"provider": p} for p in ft[1]]}
         idx = _add_price_sources(hits, fake)
         text = ft[0] + ("\n\nList-price sources: " + " ".join(f"[{i}]" for i in idx) if idx else "")
         tool_calls = [{"tool": "free_tier", "input": query, "output": [], "unverified": [], "errors": []}]
+    elif rc:
+        # price question with no volume ("compare Directions price between Ola and Google"): code writes the rate card from pricing.yaml
+        idx = _add_price_sources(hits, {"pricing": True, "results": [{"provider": p} for p in rc[1]]})
+        text = rc[0] + ("\n\nList-price sources: " + " ".join(f"[{i}]" for i in idx) if idx else "")
+        tool_calls = [{"tool": "rate_card", "input": query, "output": [], "unverified": [], "errors": []}]
     elif pricing_intent.is_pure_pricing(query, pricing):
         # Plain "what does it cost / which is cheaper": code writes the whole answer (no model call, no contradictions)
         text = pricing_intent.deterministic_text(pricing, source_idx, esc)
@@ -160,9 +167,10 @@ def _answer(query: str, *, k: int = TOP_K, persist: bool = True, rewrite: bool =
         else:
             # grounding check: drop cited sentences the cited passages do not support; nothing left -> honest "could not verify"
             allowed = grounding.calc_numbers(tool_calls) | grounding.numbers_in(" ".join(limits + fact_lines))
-            g = grounding.verify(core, hits, allowed)
+            g = grounding.verify(core, hits, allowed, query=query)
             ungrounded = g.ungrounded
             removed_claims = g.removed
+            removed_why = g.removed_why
             text = f"{g.text}\n\n{summary}" if summary else g.text
             if ungrounded:
                 force_cites = [1, 2, 3]
@@ -177,6 +185,6 @@ def _answer(query: str, *, k: int = TOP_K, persist: bool = True, rewrite: bool =
               esc["category"] if esc["escalate"] else ("pricing_unverified" if blocked else None))
     return _finish(query, {
         "text": text, "citations": citations, "tool_calls": tool_calls, "abstained": abstained, "refused": model_refused,
-        "removed_claims": removed_claims,
+        "removed_claims": removed_claims, "removed_why": removed_why,
         "escalate": esc["escalate"] and not model_refused, "reason": reason, "trace_id": trace_id,
         "retrieved": [{"chunk_id": h["chunk_id"], "doc_url": h["doc_url"]} for h in hits]}, esc, persist)

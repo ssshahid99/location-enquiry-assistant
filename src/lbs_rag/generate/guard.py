@@ -10,8 +10,10 @@ check(query) -> {"refuse": bool, "category": str|None, "message": str|None}
 import re
 from functools import lru_cache
 
+from ..index.embed import backend as _embed_backend
+
 HELP_LINE = ("I can help with pricing and cost estimates, free allowances, request limits and parameters, errors and "
-             "troubleshooting, billing and policy questions for Google Maps Platform, Mapbox, Ola Maps, HERE, OSM Nominatim "
+             "troubleshooting, billing and policy questions for Google Maps Platform, Mapbox, Ola Maps, Mappls (MapmyIndia), HERE, OSM Nominatim "
              "and OSRM. Type \"what can you do?\" for examples.")
 
 # (category, regexes, reason shown to the user). First match wins; order = most serious first.
@@ -69,7 +71,11 @@ _RULES: list[tuple[str, list[str], str]] = [
 # legitimate vague questions score >= 0.506 against our corpus, clearly unrelated ones <= 0.47, but borderline unrelated ones
 # (0.51-0.55) overlap with vague legitimate ones, so the similarity cut-off is deliberately conservative (never refuse a real
 # question) and an explicit subject list catches the obvious off-topic requests. Set to None to disable the similarity part.
-DOMAIN_SIM_MIN: float | None = 0.47
+# The similarity scale depends on the embedding model, so the cut-offs are per backend. local (bge-base): real dev questions >= 0.49, probes up
+# to 0.55. endpoint (bge-small, 378 working questions, 2026-11-14): real min 0.578 / p5 0.70; 20 off-topic probes 0.446-0.616 (median 0.52).
+# 0.55 refuses 0 of 378 real questions and catches 13/20 probes; the subject list and the model second opinion catch the rest.
+_SIM_BY_BACKEND = {"local": (0.47, 0.65), "endpoint": (0.55, 0.70)}     # (refuse below, ask the model below)
+DOMAIN_SIM_MIN: float | None = _SIM_BY_BACKEND.get(_embed_backend(), _SIM_BY_BACKEND["local"])[0]
 
 _OFF_TOPIC = re.compile(
     r"\b(weather|forecast|recipes?|cooking|calories|joke|poem|poetry|song lyrics?|lyrics|movies?|films?|cricket|football|ipl|"
@@ -79,19 +85,19 @@ _OFF_TOPIC = re.compile(
 
 _STRONG = re.compile(
     r"\b(api|apis|sdk|geocod\w*|reverse[- ]geocod\w*|routing|routes?|directions|distance[- ]?matrix|matrix|autocomplete|autosuggest|waypoints?|"
-    r"lat(itude)?|lng|lon(gitude)?|polyline|nominatim|osrm|openstreetmap|osm|mapbox|google maps|gcp|google cloud|ola maps|krutrim|places?|"
+    r"lat(itude)?|lng|lon(gitude)?|polyline|nominatim|osrm|openstreetmap|osm|mapbox|mappls|mapmyindia|google maps|gcp|google cloud|ola maps|krutrim|places?|"
     r"place ids?|sku|quota|rate[- ]?limit|session[- ]?token|endpoint|zero_results|invalid_request|over_query_limit|request_denied|"
     r"geofenc\w*|eta|traffic|tiles?|isochrone|map ?matching|pricing|price list|free tier|prepaid credits?|prepaid|credit balance|"
     r"grace period|1 september|september 2026|october 2026)\b|\bHERE\b", re.I)
 
-_SCOPE_PROMPT = """You screen questions for a support copilot about location and mapping APIs (Google Maps Platform, Mapbox, Ola Maps, HERE, OSM Nominatim, OSRM): pricing, free tiers, limits, parameters, errors, billing, API keys and accounts, policies, coverage and accuracy of these APIs, and which API to use.
+_SCOPE_PROMPT = """You screen questions for a support copilot about location and mapping APIs (Google Maps Platform, Mapbox, Ola Maps, Mappls (MapmyIndia), HERE, OSM Nominatim, OSRM): pricing, free tiers, limits, parameters, errors, billing, API keys and accounts, policies, coverage and accuracy of these APIs, and which API to use.
 Customers often ask short or vague questions about these products without naming them.
 Answer YES if the question could reasonably be about using, buying, integrating or troubleshooting such an API or its vendor. Answer NO if it is about anything else (general knowledge, science, personal advice, entertainment, writing tasks, travel or navigation for a person, other software).
 Question: {q}
 Reply with exactly one word: YES or NO.
 /no_think"""
 
-BORDERLINE_SIM = 0.65     # below this (and no domain term) we ask the model for a second opinion
+BORDERLINE_SIM = _SIM_BY_BACKEND.get(_embed_backend(), _SIM_BY_BACKEND["local"])[1]   # below this (and no domain term) we ask the model for a second opinion
 
 
 def llm_in_scope(query: str) -> bool:
@@ -119,7 +125,7 @@ def _message(category: str, why: str) -> str:
 
 def off_topic_message() -> str:
     return ("I can't help with this request: it is outside what this system is designed to process. I answer questions about "
-            "location and mapping APIs (Google Maps Platform, Mapbox, Ola Maps, HERE, OSM Nominatim, OSRM), not general topics.\n\n"
+            "location and mapping APIs (Google Maps Platform, Mapbox, Ola Maps, Mappls (MapmyIndia), HERE, OSM Nominatim, OSRM), not general topics.\n\n"
             + HELP_LINE)
 
 

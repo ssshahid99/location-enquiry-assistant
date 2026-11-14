@@ -64,7 +64,9 @@ def test_normal_answer_with_citation_is_untouched(monkeypatch):
     assert out["refused"] is False and out["text"].startswith("Ola allows 25 waypoints") and out["citations"][0]["n"] == 1
 
 
-def _gate_env(monkeypatch, verdict, sim=0.53):
+def _gate_env(monkeypatch, verdict, sim=None):
+    # default: the middle of the borderline band, whatever the embedding backend (the cut-offs are per backend)
+    sim = sim if sim is not None else (A.guard.DOMAIN_SIM_MIN + A.guard.BORDERLINE_SIM) / 2
     monkeypatch.setattr(A.guard, "llm_in_scope", lambda q: verdict)
     import lbs_rag.retrieve.hybrid as H
     monkeypatch.setattr(H, "dense_search", lambda q, filters=None, n=30: [{"score": sim}])

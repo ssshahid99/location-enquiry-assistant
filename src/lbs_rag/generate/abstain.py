@@ -1,4 +1,4 @@
-﻿"""Abstention: decide when the system must not state a fact it cannot support."""
+"""Abstention: decide when the system must not state a fact it cannot support."""
 import re
 
 ABSTAIN_PHRASES = re.compile(
@@ -9,11 +9,11 @@ ABSTAIN_PHRASES = re.compile(
 # Providers a user may ask about that are NOT in the knowledge base. The system must say so, not improvise.
 OUT_OF_SCOPE = {
     "TomTom": r"tomtom", "Azure Maps": r"azure maps|bing maps", "Esri / ArcGIS": r"esri|arcgis",
-    "Mappls / MapmyIndia": r"mappls|mapmyindia|map my india", "Apple Maps": r"apple maps|mapkit",
+    "Apple Maps": r"apple maps|mapkit",
     "Geoapify": r"geoapify", "LocationIQ": r"locationiq", "MapTiler": r"maptiler", "Radar": r"\bradar\b",
     "Amazon Location": r"amazon location|aws location", "Waze": r"\bwaze\b", "Baidu / Gaode": r"baidu|amap\b|gaode",
 }
-_KNOWN = r"google|mapbox|\bhere\b|\bola\b|krutrim|osrm|nominatim|openstreetmap|\bosm\b"
+_KNOWN = r"google|mapbox|\bhere\b|\bola\b|krutrim|osrm|nominatim|openstreetmap|\bosm\b|mappls|mapmyindia|map my india"
 
 
 def unsupported_providers(query: str) -> tuple[list[str], bool]:

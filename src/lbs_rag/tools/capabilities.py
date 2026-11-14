@@ -14,7 +14,7 @@ from ..retrieve.query_analyzer import detect
 from .facts import find_chunk
 
 ROOT = Path(__file__).resolve().parents[3]
-PRICED_AND_FREE = ["Ola Maps", "Google Maps Platform", "Mapbox", "HERE", "OSM Nominatim", "OSRM"]
+PRICED_AND_FREE = ["Ola Maps", "Google Maps Platform", "Mapbox", "HERE", "Mappls (MapmyIndia)", "OSM Nominatim", "OSRM"]
 
 
 @lru_cache(maxsize=1)
