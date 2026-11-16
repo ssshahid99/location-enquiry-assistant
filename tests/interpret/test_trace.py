@@ -27,8 +27,9 @@ def _assert_trace(output) -> None:
     assert set(TRACE_FIELDS) <= set(trace)
     assert "usage" not in trace
     assert trace["prompt_version"] == prompt_version()
-    header = Path("copilot/interpret/prompts/interp-v1.txt").read_text(encoding="utf-8")
+    header = Path("copilot/interpret/prompts/interp-v2.txt").read_text(encoding="utf-8")
     assert header.startswith(f"prompt_version: {trace['prompt_version']}")
+    assert trace["prompt_version"] == "interp-v2"
     assert isinstance(trace["approx_input_tokens"], int)
     assert isinstance(trace["approx_output_tokens"], int)
     assert isinstance(trace["latency_ms"], int)
@@ -51,9 +52,14 @@ def test_success_and_fallback_traces_and_no_frozen_ids() -> None:
     _assert_trace(success)
     _assert_trace(fallback)
     assert success.model_dump(mode="json")["trace"]["model_calls"] == 1
-    prompt = Path("copilot/interpret/prompts/interp-v1.txt").read_text(encoding="utf-8")
+    prompt = Path("copilot/interpret/prompts/interp-v2.txt").read_text(encoding="utf-8")
     rules = Path("copilot/interpret/rules.py").read_text(encoding="utf-8")
     assert "GT-LBS-" not in prompt
     assert "GT-LBS-" not in rules
-    ids = json.loads(Path("copilot/interpret/fewshot_ids.json").read_text(encoding="utf-8"))
-    assert ids == []
+    raw_ids = json.loads(Path("copilot/interpret/fewshot_ids.json").read_text(encoding="utf-8"))
+    record_ids = raw_ids["record_ids"] if isinstance(raw_ids, dict) else raw_ids
+    frozen = json.loads(Path("eval/freeze-manifest.json").read_text(encoding="utf-8"))[
+        "frozen_record_ids"
+    ]
+    assert record_ids
+    assert set(record_ids).isdisjoint(frozen)

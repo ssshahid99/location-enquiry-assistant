@@ -22,7 +22,7 @@ def test_timeout_abstains_with_a_schema_valid_output() -> None:
     assert body["abstain"] is True
     assert body["abstain_reason"] == "model_unavailable"
     assert body["api"] == "directions"
-    assert body["intent"] is None
+    assert body["intent"] == "pricing_quote"
     assert body["team"] is None
     assert body["qualification_details"]["use_case_api"]["api"] == "directions"
     assert body["trace"]["model_calls"] == 1
@@ -47,7 +47,7 @@ def test_fallback_with_one_api_keyword_keeps_only_that_api() -> None:
     assert body["abstain"] is True
     assert body["abstain_reason"] == "model_unavailable"
     assert body["api"] == "distance_matrix"
-    assert body["intent"] is None
+    assert body["intent"] == "pricing_quote"
     assert body["team"] is None
     assert body["qualification_details"]["use_case_api"] == {
         "api": "distance_matrix",

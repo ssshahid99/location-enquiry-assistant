@@ -5,14 +5,17 @@ Use case: the hits are prompt hints and, on the rules-only path, the output.
 Example: ``"20,000 requests a month"`` becomes a monthly_volume hit of 20000.
 
 Patterns for volume, timeline, provider, region, budget, constraints, and
-use case are the eval-freeze-v2 mapper patterns. Intent and team keyword
-tables stay empty: the §7 pool's question text and template_family are not
-in tracked files, so the tables are not tuned and the fallback abstains.
+use case are the eval-freeze-v2 mapper patterns. Intent keywords are loaded
+from ``intent_keywords.json`` and apply only on the rules-only (abstain) path,
+matched against the customer's quoted message. Team keywords stay empty, so
+the fallback leaves team null.
 """
 
 from __future__ import annotations
 
+import json
 import re
+from pathlib import Path
 from typing import Any
 
 from mapping.map_gt import (
@@ -73,11 +76,26 @@ _FIELD_CUES = {
     "use_case": re.compile(r"\buse[- ]?cases?\b", re.I),
 }
 
-# Built only from the §7 pool. That pool cannot be constructed from tracked
-# files (no question text, no template_family), so both tables are empty and
-# the rules-only path abstains on intent and team instead of guessing.
-INTENT_KEYWORDS: list[tuple[re.Pattern[str], str]] = []
+# Intent fallback table (intent_keywords.json): built from the docs and the tune
+# split of the §7 pool only. It is used ONLY on the rules-only (abstain) path; on
+# the model path the model's intent wins (design §3). TEAM_KEYWORDS stays empty.
+_KW_PATH = Path(__file__).resolve().parent / "intent_keywords.json"
+_WRAPPED = re.compile(r'(?:Customer wrote|Customer message):\s*["\u201c](.+?)["\u201d]', re.S)
+
+
+def _load_intent_keywords() -> list[tuple[re.Pattern[str], str]]:
+    data = json.loads(_KW_PATH.read_text(encoding="utf-8"))
+    return [(re.compile(pattern, re.I | re.M), label) for label, pattern in data["rules"]]
+
+
+INTENT_KEYWORDS: list[tuple[re.Pattern[str], str]] = _load_intent_keywords()
 TEAM_KEYWORDS: list[tuple[re.Pattern[str], str]] = []
+
+
+def customer_text(text: str) -> str:
+    """The quoted customer message inside a CRM/ticket wrapper, else the text itself."""
+    match = _WRAPPED.search(text or "")
+    return match.group(1) if match else (text or "")
 
 
 def is_decline_value(text: str) -> bool:
@@ -191,7 +209,7 @@ def _extract_user_text(text: str) -> dict:
         "use_case": _use_case_hit(text),
         "api_hits": _api_hits(text),
         "declines": _named_declines(text),
-        "intent": _keyword(text, INTENT_KEYWORDS),
+        "intent": _keyword(customer_text(text), INTENT_KEYWORDS),
         "team": _keyword(text, TEAM_KEYWORDS),
     }
 

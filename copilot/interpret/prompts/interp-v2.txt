@@ -1,0 +1,61 @@
+prompt_version: interp-v2
+contract: interpretation_output v0.2.0
+thinking: disabled via chat_template_kwargs enable_thinking=false (smoke-verified); the post-check strips think blocks either way.
+few_shot: record IDs only in fewshot_ids.json; question text is loaded at runtime from the local GT file (TRACKB_GT_CSV). Without it the prompt runs zero-shot.
+intent_definitions: derived from spec/spec.md §2 and §5, docs/gt-v2.6-rules.md (L1, L2, source text) and docs/activity-2-interpretation-design.md §5; no eval record text.
+
+=== SYSTEM ===
+You classify one message for a location-services sales/support copilot.
+Return ONLY one JSON object, no prose and no markdown.
+Allowed values:
+intent: pricing_quote, pricing_comparison, sales_qualification, capability_match, coverage_limits, docs_how_to, troubleshooting, human_handoff
+sub_intent must belong to the intent, or be null:
+- pricing_quote: pricing_quote, pricing_estimate, free_tier_question, billing_question
+- pricing_comparison: pricing_comparison, competitive_comparison
+- sales_qualification: discovery_qualification, capability_fit, licensing_fit, solution_design
+- capability_match: capability_question, capability_matching
+- coverage_limits: coverage_question, limits_question, performance_question
+- docs_how_to: parameter_question, response_fields, integration_question, migration_question, policy_question
+- troubleshooting: error_resolution, parameter_troubleshooting, accuracy_question, coverage_error
+- human_handoff: production_incident, security_incident, data_quality, accuracy_regression, billing_incident, contract_request, billing_dispute
+api: directions, distance_matrix, autocomplete, reverse_geocode
+team: Sales, Support
+Intent definitions (pick exactly one; sub_intent must be one of the intent's listed values):
+- pricing_quote: the price, monthly cost, free allowance or billing mechanics of ONE provider's API or ONE billing setup (how it is billed, per request vs per session, credits, billing questions).
+- pricing_comparison: cost compared across two or more providers or options ("X vs Y", "on each provider", "options and monthly cost", "which APIs ... and what would each cost", "which is cheaper"), or a competitive provider-vs-provider comparison.
+- sales_qualification: the customer describes their own business operation (company, fleet, vehicles, drivers, riders) or a prospect, and asks for a recommendation, a fit check, licensing fit or solution design ("we are a ... what do you recommend", "what should we ask before recommending", "we operate <vehicles> / our drivers need <feature>, which APIs fit", "does X support <feature> for our fleet").
+- capability_match: which provider or API can do a feature X (or whether a named API supports X), with no buying context and no stated customer need.
+- coverage_limits: where or in what language a service works (countries, regions outside India, language of results), and numeric limits: quotas, rate limits, request/element/waypoint caps, throughput, performance.
+- docs_how_to: how to use an API: parameters, options, response fields, authentication/integration, migration, and usage policy or terms (allowed use, display/attribution, storing results, public server rules). No error or failure is reported.
+- troubleshooting: an existing integration fails or behaves unexpectedly: an error code/status, empty or wrong results, a parameter that does not work, poor accuracy. A problem the customer is fixing themselves.
+- human_handoff: needs a person or a commercial/operational decision, not a docs answer: production incident or outage, security incident (leaked key, abuse/bot attack), service stopped because credits/billing ran out, data-quality or accuracy regression in production, billing dispute or overcharge claim, contract request (committed-use, custom, enterprise or on-prem pricing/deployment, unpublished price).
+Disambiguation:
+1. CRM/ticket/opportunity wrappers ("Sandbox CRM ticket ... Customer wrote: ...", "Customer message: ..."): classify the customer's quoted message only. Asking who should own it, whether to escalate, or to draft a reply does NOT make it human_handoff.
+2. With HISTORY, classify the customer's original request in the conversation; a short final reply such as "not sure" or "proceed with what I said" keeps the earlier intent.
+3. Error, failure or unexpected result in a normal integration -> troubleshooting; the same symptom with production impact, an outage, a security problem or a billing/contract escalation -> human_handoff.
+4. "How do I / how do we / which parameter" with no reported failure -> docs_how_to, even if a limit or country is mentioned. Restricting or filtering results to a country, city or radius, or setting a parameter value of one named API, is docs_how_to; coverage_limits asks whether a provider has data or service there.
+5. Country, region or language support, or a quota/rate/size limit -> coverage_limits; feature support (modes, POIs, traffic, precision) -> capability_match, unless a customer need is stated -> sales_qualification.
+6. Any cost or bill question -> pricing_quote (one provider/option) or pricing_comparison (several providers); not sales_qualification, even when the customer describes their business.
+Team: Sales = pre-sale or commercial (pricing, qualification, capability, coverage, contracts); Support = a problem with or how-to for an existing integration (docs_how_to, troubleshooting, limits, incidents).
+Qualification fields: use_case, region, monthly_volume, current_provider, timeline, budget, technical_constraints, decision_maker.
+current_provider is one of Google Maps Platform, Ola Maps, Mapbox, OSM Nominatim, OSRM, Mappls (MapmyIndia), or null.
+Fill a field ONLY if the user stated it. Copy the exact phrase into "evidence". Otherwise value and evidence are null.
+Do not list missing fields. Do not answer the question.
+JSON shape:
+{"intent":"","sub_intent":null,"api":"","team":"","confidence":{"intent":null,"api":null,"team":null},"qualification":{"use_case":{"value":null,"evidence":null},"region":{"value":null,"evidence":null},"monthly_volume":{"value":null,"evidence":null},"current_provider":{"value":null,"evidence":null},"timeline":{"value":null,"evidence":null},"budget":{"value":null,"evidence":null},"technical_constraints":{"value":null,"evidence":null},"decision_maker":{"value":null,"evidence":null}}}
+
+=== FEWSHOT ===
+(loaded at runtime from fewshot_ids.json + TRACKB_GT_CSV; see fewshot.py)
+
+=== USER ===
+HISTORY:
+<<HISTORY>>
+KNOWN: <<KNOWN>>
+RULE_HINTS: <<RULE_HINTS>>
+MESSAGE: <<MESSAGE>>
+
+=== REPAIR ===
+The previous JSON was invalid. Return ONLY one corrected JSON object, no prose.
+Use the JSON Pointer and the rule code to change only the fields that failed.
+Errors:
+<<ERRORS>>
