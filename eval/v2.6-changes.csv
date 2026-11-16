@@ -1,0 +1,178 @@
+record_id,frozen,field,old,new,source
+GT-LBS-DIR-010,no,comparison.equivalent_requirements.monthly_volume_raw,,"4,000,000 route (directions) requests a month",CONFIRMED
+GT-LBS-DIR-010,no,qualification_details.missing_required_fields,"[""monthly_volume"", ""current_provider"", ""timeline""]","[""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DIR-010,no,qualification_details.monthly_volume,,"{""raw"": ""4,000,000 route (directions) requests a month"", ""requests_per_month"": 4000000, ""unit"": ""requests_per_month""}",CONFIRMED
+GT-LBS-DIR-010,no,qualification_details.use_case_api.use_case,,Chennai field-service SaaS company,R13
+GT-LBS-DIR-011,yes,comparison.equivalent_requirements.monthly_volume_raw,,"6,000,000 route (directions) requests a month",CONFIRMED
+GT-LBS-DIR-011,yes,qualification_details.missing_required_fields,"[""monthly_volume"", ""current_provider"", ""timeline""]","[""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DIR-011,yes,qualification_details.monthly_volume,,"{""raw"": ""6,000,000 route (directions) requests a month"", ""requests_per_month"": 6000000, ""unit"": ""requests_per_month""}",CONFIRMED
+GT-LBS-DIR-011,yes,qualification_details.use_case_api.use_case,,Kolkata two-wheeler rental company,R13
+GT-LBS-DIR-012,yes,comparison.equivalent_requirements.monthly_volume_raw,,"8,000,000 route (directions) requests a month",CONFIRMED
+GT-LBS-DIR-012,yes,qualification_details.missing_required_fields,"[""monthly_volume"", ""current_provider"", ""timeline""]","[""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DIR-012,yes,qualification_details.monthly_volume,,"{""raw"": ""8,000,000 route (directions) requests a month"", ""requests_per_month"": 8000000, ""unit"": ""requests_per_month""}",CONFIRMED
+GT-LBS-DIR-012,yes,qualification_details.use_case_api.use_case,,Ahmedabad pharma distributor,R13
+GT-LBS-DIR-013,no,comparison.equivalent_requirements.monthly_volume_raw,,"9,500,000 route (directions) requests a month",CONFIRMED
+GT-LBS-DIR-013,no,qualification_details.missing_required_fields,"[""monthly_volume"", ""current_provider"", ""timeline""]","[""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DIR-013,no,qualification_details.monthly_volume,,"{""raw"": ""9,500,000 route (directions) requests a month"", ""requests_per_month"": 9500000, ""unit"": ""requests_per_month""}",CONFIRMED
+GT-LBS-DIR-013,no,qualification_details.use_case_api.use_case,,Jaipur tour operator,R13
+GT-LBS-DIR-014,no,comparison.equivalent_requirements.monthly_volume_raw,,"12,000,000 route (directions) requests a month",CONFIRMED
+GT-LBS-DIR-014,no,qualification_details.missing_required_fields,"[""monthly_volume"", ""current_provider"", ""timeline""]","[""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DIR-014,no,qualification_details.monthly_volume,,"{""raw"": ""12,000,000 route (directions) requests a month"", ""requests_per_month"": 12000000, ""unit"": ""requests_per_month""}",CONFIRMED
+GT-LBS-DIR-014,no,qualification_details.use_case_api.use_case,,Kochi school-bus tracking provider,R13
+GT-LBS-DIR-020,yes,qualification_details.technical_constraints,,no traffic needed,R6
+GT-LBS-DIR-021,yes,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DIR-022,no,qualification_details.technical_constraints,,no traffic needed,R6
+GT-LBS-DIR-023,no,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DIR-024,no,qualification_details.technical_constraints,,no traffic needed,R6
+GT-LBS-DIR-028,no,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DIR-029,no,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DIR-030,no,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DIR-039,yes,intent,sales_qualification,capability_match,L1
+GT-LBS-DIR-039,yes,sub_intent,capability_fit,capability_matching,L1
+GT-LBS-DIR-043,yes,qualification_details.technical_constraints,self-host,,R6
+GT-LBS-DIR-079,no,qualification_details.current_provider,,OSRM,CONFIRMED
+GT-LBS-DIR-079,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""region"", ""monthly_volume"", ""timeline""]",CONFIRMED
+GT-LBS-DIR-085,yes,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""region"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DIR-085,yes,qualification_details.monthly_volume,,"{""raw"": ""40M Ola Directions calls a month"", ""requests_per_month"": 40000000, ""unit"": ""calls_per_month""}",CONFIRMED
+GT-LBS-DIR-201,yes,comparison.equivalent_requirements.region,India,"India, Nepal",R7
+GT-LBS-DIR-201,yes,qualification_details.region,India,"India, Nepal",R7
+GT-LBS-DIR-201,yes,qualification_details.use_case_api.use_case,,bike-taxi app in India,R13
+GT-LBS-DIR-202,no,comparison.equivalent_requirements.region,India,"India, Sri Lanka",R7
+GT-LBS-DIR-202,no,qualification_details.region,India,"India, Sri Lanka",R7
+GT-LBS-DIR-202,no,qualification_details.use_case_api.use_case,,bike-taxi app in India,R13
+GT-LBS-DIR-203,no,comparison.equivalent_requirements.region,India,"Bangladesh, India",R7
+GT-LBS-DIR-203,no,qualification_details.region,India,"Bangladesh, India",R7
+GT-LBS-DIR-203,no,qualification_details.use_case_api.use_case,,bike-taxi app in India,R13
+GT-LBS-DIR-204,no,comparison.equivalent_requirements.region,India,"India, United Arab Emirates",R7
+GT-LBS-DIR-204,no,qualification_details.region,India,"India, United Arab Emirates",R7
+GT-LBS-DIR-204,no,qualification_details.use_case_api.use_case,,bike-taxi app in India,R13
+GT-LBS-DIR-205,no,comparison.equivalent_requirements.region,,"India, Nepal",CONFIRMED (CF2) then R7
+GT-LBS-DIR-205,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DIR-205,no,qualification_details.region,,"India, Nepal",CONFIRMED (CF2) then R7
+GT-LBS-DIR-206,no,comparison.equivalent_requirements.region,,"India, Sri Lanka",CONFIRMED (CF2) then R7
+GT-LBS-DIR-206,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DIR-206,no,qualification_details.region,,"India, Sri Lanka",CONFIRMED (CF2) then R7
+GT-LBS-DIR-207,no,qualification_details.use_case_api.use_case,,cycling-delivery startup in Pune,R13
+GT-LBS-DIR-208,no,comparison.equivalent_requirements.region,,Indonesia,CONFIRMED
+GT-LBS-DIR-208,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DIR-208,no,qualification_details.region,,Indonesia,CONFIRMED
+GT-LBS-DIR-208,no,qualification_details.use_case_api.use_case,,bicycle courier service expanding from India to Jakarta,R13
+GT-LBS-DIR-221,yes,qualification_details.technical_constraints,self-hosted,,R6
+GT-LBS-DM-005,no,qualification_details.use_case_api.use_case,,Delhi NCR last-mile courier,R13
+GT-LBS-DM-006,no,qualification_details.use_case_api.use_case,,Mumbai food-delivery platform,R13
+GT-LBS-DM-007,no,qualification_details.use_case_api.use_case,,Chennai field-service SaaS company,R13
+GT-LBS-DM-008,no,qualification_details.use_case_api.use_case,,Kolkata two-wheeler rental company,R13
+GT-LBS-DM-009,no,qualification_details.use_case_api.use_case,,Ahmedabad pharma distributor,R13
+GT-LBS-DM-010,no,qualification_details.use_case_api.use_case,,Jaipur tour operator,R13
+GT-LBS-DM-011,no,qualification_details.use_case_api.use_case,,Kochi school-bus tracking provider,R13
+GT-LBS-DM-012,no,qualification_details.use_case_api.use_case,,Lucknow e-commerce returns operator,R13
+GT-LBS-DM-013,no,qualification_details.use_case_api.use_case,,Indore agri-input distributor,R13
+GT-LBS-DM-026,yes,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DM-028,no,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DM-043,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",R10
+GT-LBS-DM-043,no,qualification_details.region,,India,R10
+GT-LBS-DM-114,no,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DM-115,no,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DM-116,no,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DM-117,yes,qualification_details.technical_constraints,,no traffic,R6
+GT-LBS-DM-118,yes,qualification_details.technical_constraints,,no traffic,R6
+GT-LBS-DM-119,no,qualification_details.technical_constraints,,no traffic,R6
+GT-LBS-DM-124,no,qualification_details.technical_constraints,self-host,,R6
+GT-LBS-DM-201,yes,comparison.equivalent_requirements.region,,"India, Nepal",CONFIRMED (CF2) then R7
+GT-LBS-DM-201,yes,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-201,yes,qualification_details.region,,"India, Nepal",CONFIRMED (CF2) then R7
+GT-LBS-DM-201,yes,qualification_details.use_case_api.use_case,,logistics firm in Lucknow adding Kathmandu,R13
+GT-LBS-DM-202,no,comparison.equivalent_requirements.region,,"India, Sri Lanka",CONFIRMED (CF2) then R7
+GT-LBS-DM-202,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-202,no,qualification_details.region,,"India, Sri Lanka",CONFIRMED (CF2) then R7
+GT-LBS-DM-202,no,qualification_details.use_case_api.use_case,,food-delivery app expanding to Colombo,R13
+GT-LBS-DM-203,no,comparison.equivalent_requirements.region,,"Bangladesh, India",CONFIRMED (CF2) then R7
+GT-LBS-DM-203,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-203,no,qualification_details.region,,"Bangladesh, India",CONFIRMED (CF2) then R7
+GT-LBS-DM-203,no,qualification_details.use_case_api.use_case,,courier network adding Dhaka,R13
+GT-LBS-DM-204,no,comparison.equivalent_requirements.region,,"India, United Arab Emirates",CONFIRMED (CF2) then R7
+GT-LBS-DM-204,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-204,no,qualification_details.region,,"India, United Arab Emirates",CONFIRMED (CF2) then R7
+GT-LBS-DM-204,no,qualification_details.use_case_api.use_case,,fleet operator adding Dubai,R13
+GT-LBS-DM-205,no,comparison.equivalent_requirements.region,,"India, Singapore",CONFIRMED (CF2) then R7
+GT-LBS-DM-205,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-205,no,qualification_details.region,,"India, Singapore",CONFIRMED (CF2) then R7
+GT-LBS-DM-205,no,qualification_details.use_case_api.use_case,,B2B dispatch tool adding Singapore,R13
+GT-LBS-DM-206,no,comparison.equivalent_requirements.region,,Nepal,CONFIRMED
+GT-LBS-DM-206,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-206,no,qualification_details.region,,Nepal,CONFIRMED
+GT-LBS-DM-206,no,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DM-207,no,comparison.equivalent_requirements.region,,Sri Lanka,CONFIRMED
+GT-LBS-DM-207,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-207,no,qualification_details.region,,Sri Lanka,CONFIRMED
+GT-LBS-DM-207,no,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DM-208,no,comparison.equivalent_requirements.region,,Indonesia,CONFIRMED
+GT-LBS-DM-208,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-208,no,qualification_details.region,,Indonesia,CONFIRMED
+GT-LBS-DM-208,no,qualification_details.technical_constraints,,traffic-aware,R6
+GT-LBS-DM-210,no,comparison.equivalent_requirements.region,,Thailand,CONFIRMED
+GT-LBS-DM-210,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-210,no,qualification_details.region,,Thailand,CONFIRMED
+GT-LBS-DM-211,no,comparison.equivalent_requirements.region,,Bhutan,CONFIRMED
+GT-LBS-DM-211,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-211,no,qualification_details.region,,Bhutan,CONFIRMED
+GT-LBS-DM-211,no,qualification_details.technical_constraints,self-host,,R6
+GT-LBS-DM-212,no,comparison.equivalent_requirements.region,,Nepal,CONFIRMED
+GT-LBS-DM-212,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-212,no,qualification_details.region,,Nepal,CONFIRMED
+GT-LBS-DM-212,no,qualification_details.technical_constraints,self-host,,R6
+GT-LBS-DM-218,yes,qualification_details.current_provider,,OSRM,CONFIRMED
+GT-LBS-DM-218,yes,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""region"", ""monthly_volume"", ""timeline""]",CONFIRMED
+GT-LBS-AC-073,yes,intent,capability_match,troubleshooting,L2
+GT-LBS-AC-073,yes,responsible_role.team,Sales,Support,L2
+GT-LBS-AC-073,yes,sub_intent,capability_question,accuracy_question,L2
+GT-LBS-AC-073,yes,team,Sales,Support,L2
+GT-LBS-AC-083,no,qualification_details.use_case_api.use_case,,AI assistant product,R13
+GT-LBS-AC-089,yes,qualification_details.technical_constraints,,India-only data residency,R6
+GT-LBS-AC-208,no,comparison.equivalent_requirements.region,India,"India, Nepal",R7
+GT-LBS-AC-208,no,qualification_details.region,India,"India, Nepal",R7
+GT-LBS-AC-209,no,comparison.equivalent_requirements.region,India,"India, Sri Lanka",R7
+GT-LBS-AC-209,no,qualification_details.region,India,"India, Sri Lanka",R7
+GT-LBS-AC-210,yes,comparison.equivalent_requirements.region,,Bhutan,CONFIRMED
+GT-LBS-AC-210,yes,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-AC-210,yes,qualification_details.region,,Bhutan,CONFIRMED
+GT-LBS-RG-002,no,qualification_details.current_provider,,Google Maps Platform,R5
+GT-LBS-RG-002,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""region"", ""monthly_volume"", ""timeline""]",R5
+GT-LBS-RG-082,yes,qualification_details.current_provider,,OSM Nominatim,R5
+GT-LBS-RG-082,yes,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""region"", ""monthly_volume"", ""timeline""]",R5
+GT-LBS-RG-201,yes,comparison.equivalent_requirements.region,India,"India, Nepal",R7
+GT-LBS-RG-201,yes,qualification_details.region,India,"India, Nepal",R7
+GT-LBS-RG-202,no,comparison.equivalent_requirements.region,India,"Bhutan, India",R7
+GT-LBS-RG-202,no,qualification_details.region,India,"Bhutan, India",R7
+GT-LBS-RG-203,no,comparison.equivalent_requirements.region,India,"India, Sri Lanka",R7
+GT-LBS-RG-203,no,qualification_details.region,India,"India, Sri Lanka",R7
+GT-LBS-RG-204,no,comparison.equivalent_requirements.region,India,"India, United Arab Emirates",R7
+GT-LBS-RG-204,no,qualification_details.region,India,"India, United Arab Emirates",R7
+GT-LBS-RG-206,no,comparison.equivalent_requirements.region,,India,CONFIRMED
+GT-LBS-RG-206,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-RG-206,no,qualification_details.region,,India,CONFIRMED
+GT-LBS-RG-210,no,comparison.equivalent_requirements.region,India,"India, Nepal",R7
+GT-LBS-RG-210,no,qualification_details.region,India,"India, Nepal",R7
+GT-LBS-RG-211,no,comparison.equivalent_requirements.region,India,"Bangladesh, India",R7
+GT-LBS-RG-211,no,qualification_details.region,India,"Bangladesh, India",R7
+GT-LBS-RG-212,yes,qualification_details.current_provider,,Mapbox,R5
+GT-LBS-RG-212,yes,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""region"", ""monthly_volume"", ""timeline""]",R5
+GT-LBS-RG-212,yes,qualification_details.technical_constraints,,40 driver pings a second,R6
+GT-LBS-RG-225,yes,comparison.equivalent_requirements.region,India,"India, Nepal",R7
+GT-LBS-RG-225,yes,qualification_details.region,India,"India, Nepal",R7
+GT-LBS-DM-226,yes,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-226,yes,qualification_details.region,,India,CONFIRMED
+GT-LBS-DM-229,no,comparison.equivalent_requirements.region,,India,CONFIRMED
+GT-LBS-DM-229,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-DM-229,no,qualification_details.region,,India,CONFIRMED
+GT-LBS-RG-229,no,comparison.equivalent_requirements.region,,India,CONFIRMED
+GT-LBS-RG-229,no,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""monthly_volume"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-RG-229,no,qualification_details.region,,India,CONFIRMED
+GT-LBS-RG-229,no,qualification_details.technical_constraints,self-hosted,,R6
+GT-LBS-RG-231,yes,qualification_details.current_provider,,Mapbox,R5
+GT-LBS-RG-231,yes,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""region"", ""monthly_volume"", ""timeline""]",R5
+GT-LBS-AC-234,yes,qualification_details.use_case_api.use_case,standard self-service Ola Maps customer using Autocomplete with automatic card b,standard self-service Ola Maps customer using Autocomplete with automatic card billing,CONFIRMED
+GT-LBS-DM-233,yes,qualification_details.missing_required_fields,"[""region"", ""current_provider"", ""timeline""]","[""current_provider"", ""timeline""]",R10
+GT-LBS-DM-233,yes,qualification_details.region,,India,R10
+GT-LBS-AC-236,yes,qualification_details.missing_required_fields,"[""region"", ""monthly_volume"", ""current_provider"", ""timeline""]","[""region"", ""current_provider"", ""timeline""]",CONFIRMED
+GT-LBS-AC-236,yes,qualification_details.monthly_volume,,"{""raw"": ""40,000 Google Places Autocomplete Requests per month"", ""requests_per_month"": 40000, ""unit"": ""requests_per_month""}",CONFIRMED

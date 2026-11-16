@@ -1,0 +1,22 @@
+{
+  "purpose": "Approved GT label corrections applied by mapping/map_gt.py at mapping time. The raw GT file is not edited.",
+  "version": "1.0.0",
+  "gt_version": "v2.5",
+  "approved_by": "Shahid Kamal",
+  "approved_at_ist": "2026-11-16 14:03",
+  "rules": "docs/gt-v2.6-rules.md (L1, L2)",
+  "overrides": {
+    "GT-LBS-DIR-039": {
+      "rule": "L1",
+      "reason": "Asks which APIs can optimise 20 stops and what the limits are, with no buying context; same wording as GT-LBS-DIR-113 (capability_match).",
+      "from": {"intent": "sales_qualification", "sub_intent": "capability_fit", "primary_team": "Sales"},
+      "to": {"intent": "capability_match", "sub_intent": "capability_matching"}
+    },
+    "GT-LBS-AC-073": {
+      "rule": "L2",
+      "reason": "Reports a problem with an existing integration (\"We use Mapbox Geocoding v6 ... and get no POIs\"); the GT owner is already Support L1.",
+      "from": {"intent": "capability_match", "sub_intent": "capability_question", "primary_team": "Sales"},
+      "to": {"intent": "troubleshooting", "sub_intent": "accuracy_question", "primary_team": "Support"}
+    }
+  }
+}

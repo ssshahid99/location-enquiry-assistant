@@ -1,7 +1,7 @@
 # Interpretation validation cross-check
 
 Read-only comparison of the 532 committed GT v2.5 gold envelopes
-(`mapping/gold_outputs_all.jsonl`, sha256 `f8a4e230dca3830bbebdbfca6712b56d765873f8e8c9f92ab18dc461fa4dd679`).
+(`mapping/gold_outputs_all.jsonl`, sha256 `a65fa071a74a0796fb7230f042b6713f10d0658315da091a97124746b586767e`).
 Holdout rows were read and not used to change rules, schemas, or tests.
 No provider API was called. The dataset validator and the gold files
 were not modified.

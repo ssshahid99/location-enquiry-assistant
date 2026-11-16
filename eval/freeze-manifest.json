@@ -1,14 +1,15 @@
 {
   "manifest": "Activity 4 frozen core eval set",
-  "manifest_version": 2,
-  "gt_version": "v2.5",
-  "date_ist": "2026-11-14",
+  "manifest_version": 3,
+  "gt_version": "v2.5 (raw GT unchanged); gold mapping rules v2.6",
+  "date_ist": "2026-11-16",
   "timezone": "Asia/Calcutta (IST, UTC+05:30)",
-  "git_tag": "eval-freeze-v2",
+  "git_tag": "eval-freeze-v3",
+  "tag_status": "Application Engineer review: approved with nits (fixed); tag eval-freeze-v3 not created, pending Shahid decision",
   "supersedes": {
-    "tag": "eval-freeze-v1",
-    "commit": "3b48db9c483e1be04f039800cc6de26b21069689",
-    "reason": "Qualification gold corrected: mapping/map_gt.py now extracts qualification_details from [user] turns only, with stricter timeline, monthly_volume and current_provider rules (approved by Shahid 2026-11-14 23:37 IST). Frozen membership, GT files and counts are unchanged; only the frozen jsonl content and hash changed."
+    "tag": "eval-freeze-v2",
+    "commit": "22e797398767a68e19af93181271410d573ce363",
+    "reason": "GT v2.6 gold rules approved by Shahid 2026-11-16 14:03 IST: confirmed qualification fixes CF1-CF4, rules R1-R14 in mapping/map_gt.py, and label overrides L1 (GT-LBS-DIR-039) and L2 (GT-LBS-AC-073) in mapping/label_overrides.json. L3 (GT-LBS-AC-086) not approved, unchanged. Frozen membership and the raw GT files are unchanged; frozen jsonl content and hash changed. Changes: eval/v2.6-changes.csv."
   },
   "sources": {
     "gt_v2_5.csv": {
@@ -24,8 +25,25 @@
   },
   "frozen_file": {
     "path": "mapping/gold_outputs_frozen.jsonl",
-    "sha256": "151f87f56ae91fbbb9c8977e09c0151efb1c14cd500877354bb3826a1f349123",
+    "sha256": "87f9993bcfbbb0a3f31e191fe6520fed86a8cb49fcd2a177f57f9b9019f08cbe",
     "records": 80
+  },
+  "gold_all_file": {
+    "path": "mapping/gold_outputs_all.jsonl",
+    "sha256": "a65fa071a74a0796fb7230f042b6713f10d0658315da091a97124746b586767e",
+    "records": 532
+  },
+  "mapper": {
+    "path": "mapping/map_gt.py",
+    "sha256": "7011eb90ca66450639969da3cc743e6c05ae23ea3af11ef1c1bfcf2078bcfeb0"
+  },
+  "label_overrides": {
+    "path": "mapping/label_overrides.json",
+    "sha256": "933beacf585d8318ad203a6a4a1038ebebe03e35ecd3642b48cb3da07b435708",
+    "records": [
+      "GT-LBS-AC-073",
+      "GT-LBS-DIR-039"
+    ]
   },
   "frozen_record_ids": [
     "GT-LBS-AC-031",
@@ -195,14 +213,14 @@
     },
     "team": {
       "Sales": {
-        "value": 48,
-        "share_pct": 60.0,
+        "value": 47,
+        "share_pct": 58.75,
         "threshold": "40-60%",
         "pass": true
       },
       "Support": {
-        "value": 32,
-        "share_pct": 40.0,
+        "value": 33,
+        "share_pct": 41.25,
         "threshold": "40-60%",
         "pass": true
       }
@@ -218,12 +236,20 @@
       "human_handoff": 10,
       "pricing_comparison": 10,
       "pricing_quote": 10,
-      "sales_qualification": 10,
-      "troubleshooting": 10
-    }
+      "sales_qualification": 9,
+      "troubleshooting": 11
+    },
+    "per_intent_note": "L1 and L2 move sales_qualification 10->9 and troubleshooting 10->11 (capability_match stays 10); every intent stays >=8."
   },
   "activity_4_counts_pass": true,
-  "note": "Raw GT files (data/) are excluded from git and bound to this manifest by SHA-256 only. The freeze is the annotated tag eval-freeze-v2 plus the SHA-256 of mapping/gold_outputs_frozen.jsonl; the tag must predate the first agent-code commit. eval-freeze-v1 is kept unchanged as history.",
+  "open_decision": "Activity 4 timing condition: earlier freezes required the tag to predate the first agent-code commit. origin/master already holds agent code (copilot/validation since 3e6261d, 2026-11-15 00:13 IST; locsvc_copilot since ca2437d), so eval-freeze-v3 cannot predate it. Needs Shahid to confirm the re-freeze is accepted (gold-only correction; no agent code reads or tunes on the frozen jsonl) before tagging.",
+  "validator": {
+    "all": "532/532 pass",
+    "frozen": "80/80 pass",
+    "mapping_warnings": 0,
+    "report": "validator/validator-report.md"
+  },
+  "note": "Raw GT files (data/) are excluded from git and bound to this manifest by SHA-256 only. The freeze is the annotated tag eval-freeze-v3 (pending) plus the SHA-256 of mapping/gold_outputs_frozen.jsonl. eval-freeze-v1 and eval-freeze-v2 are kept unchanged as history.",
   "history": [
     {
       "manifest_version": 1,
@@ -232,6 +258,17 @@
       "date_ist": "2026-11-14",
       "manifest_sha256": "81f44d3cbba75d346e46a0ddfdd4efaeb0932dbad5aaf3c2342f1edbf1275802",
       "frozen_file_sha256": "87c255fe402b68303e95205882d9596efd4e51391d395d3d86aaf129333a0604",
+      "gt_v2_5_csv_sha256": "cb95d55457720dfbe97ca7eb0fb4b3970d3033b839c3ccf9dedec754850f7c5d",
+      "gt_v2_5_xlsx_sha256": "44f7ed7302f06e772e6c77630eed6dc8268e4620b3366ef0e242e9b0e9131fda",
+      "frozen_records": 80
+    },
+    {
+      "manifest_version": 2,
+      "git_tag": "eval-freeze-v2",
+      "commit": "22e797398767a68e19af93181271410d573ce363",
+      "date_ist": "2026-11-14",
+      "manifest_sha256": "fa65540320b52273ac71bd8dde2ed586388dd050c496374aa80cfe0eb883a8a5",
+      "frozen_file_sha256": "151f87f56ae91fbbb9c8977e09c0151efb1c14cd500877354bb3826a1f349123",
       "gt_v2_5_csv_sha256": "cb95d55457720dfbe97ca7eb0fb4b3970d3033b839c3ccf9dedec754850f7c5d",
       "gt_v2_5_xlsx_sha256": "44f7ed7302f06e772e6c77630eed6dc8268e4620b3366ef0e242e9b0e9131fda",
       "frozen_records": 80

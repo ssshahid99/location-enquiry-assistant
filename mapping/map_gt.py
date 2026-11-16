@@ -1,4 +1,4 @@
-"""Mechanical GT v2.5 → schema mapper. Read-only on the GT file.
+"""Mechanical GT v2.5 → schema mapper (GT v2.6 gold rules). Read-only on the GT file.
 
 Purpose: turn each row of the GT workbook (sheet ``Data`` plus the citations
 sheet) into one copilot output envelope that follows ``schemas/``.
@@ -7,6 +7,11 @@ gold expected outputs; it has no command-line entry point of its own.
 Example: ``map_record`` maps GT-LBS-DIR-011 to an envelope with
 ``tools_expected=["doc_search", "calculator"]``, ``step_count_limit=10`` and
 ``approx_output_tokens=344`` (``ceil(chars/4)``).
+
+GT v2.6 gold rules (approved by Shahid 2026-11-16 14:03 IST; see
+``docs/gt-v2.6-rules.md``): confirmed fixes CF1-CF4 and rules R1-R14 in the
+qualification extractors below, plus the label overrides L1/L2 read from
+``mapping/label_overrides.json``. The raw GT is never edited.
 """
 
 from __future__ import annotations
@@ -23,6 +28,8 @@ REPO = Path(__file__).resolve().parents[1]
 VOCAB_PATH = REPO / "vocab" / "controlled-vocabulary.json"
 DEFAULT_GT = Path("/workspace/capstone-trackb/data/gt_v2_5.xlsx")
 
+LABEL_OVERRIDES_PATH = REPO / "mapping" / "label_overrides.json"
+
 # v2.3 applied the approved tool re-labels and provider-label merge in the
 # GT workbook. v2.4 keeps those values, relabels the remaining bare Support
 # owners, fills the two previously empty tool traces, and adds blank
@@ -32,6 +39,11 @@ DEFAULT_GT = Path("/workspace/capstone-trackb/data/gt_v2_5.xlsx")
 # eval-freeze-v2: qualification extraction reads [user] turns only and uses
 # stricter timeline, monthly_volume and current_provider rules (see
 # user_text, extract_timeline, extract_monthly_volume, extract_current_provider).
+# GT v2.6 (eval-freeze-v3, pending tag): CF1-CF4 fix the 9 confirmed frozen-80
+# qualification defects, R1-R14 settle the rule boundaries, and L1/L2 relabel two
+# records through mapping/label_overrides.json (apply_label_overrides). A missing
+# overrides file, or an override whose ``from`` values do not match the GT row,
+# fails the run instead of being skipped.
 
 TOOL_ORDER = ["doc_search", "calculator", "update_record", "escalate_ticket"]
 
@@ -340,13 +352,18 @@ _VOLUME_UNITS = (
     r"(?P<unit>requests|request|calls|call|lookups|lookup|sessions|session|elements|"
     r"element|searches|search|queries|query|transactions|transaction)"
 )
+# CF1: up to 5 API-phrase tokens from a closed list (provider/product words or a
+# short parenthesised gloss) may sit between the number and the unit, so
+# "route (directions) requests", "Google Places Autocomplete Requests" and
+# "Ola Directions calls" match. (eval-freeze-v2 allowed one API word.)
 _VOLUME_API_WORDS = (
-    r"(?:(?:API|Directions|Distance Matrix|Autocomplete|Place Autocomplete|"
-    r"Reverse[- ]Geocod\w*|Geocoding|routing|matrix)\s+)?"
+    r"(?:(?:API|Google|Maps|Platform|Ola|Mapbox|Mappls|MapmyIndia|Nominatim|OSRM|"
+    r"Places?|Autocomplete|Directions|Distance|Matrix|Routes?|routing|Geocoding|"
+    r"Reverse[- ]Geocod\w*|Search|Box|\([A-Za-z][A-Za-z -]{0,30}\))\s+){0,5}"
 )
 _VOLUME_PER = r"(?:a\s+month|per\s+month|monthly|each\s+month|every\s+month|/\s*month|/\s*mo\b)"
 VOLUME_PATTERNS = [
-    # "2,000,000 Directions requests a month", "200,000 sessions a month"
+    # "2,000,000 Directions requests a month", "6,000,000 route (directions) requests a month"
     re.compile(_VOLUME_NUMBER + r"\s+" + _VOLUME_API_WORDS + _VOLUME_UNITS + r"\s*" + _VOLUME_PER, re.I),
     # "20,000 per month", "300,000 a month", "50M/month"
     re.compile(_VOLUME_NUMBER + r"\s*" + _VOLUME_PER, re.I),
@@ -439,6 +456,22 @@ CURRENT_PROVIDER_CUES = [
     ("our <provider> ...", re.compile(r"\bour\s+" + _PROVIDER_NAME + r"(?:'s)?\b", re.I)),
     ("<provider> customer", re.compile(r"\bwe(?:'re|\s+are)\s+an?\s+(?:[\w-]+\s+){0,3}" + _PROVIDER_NAME + r"\s+customer\b", re.I)),
 ]
+# CF3: "our <modifier> <provider>" with a closed modifier list ("Our self-hosted OSRM").
+_OUR_MODIFIERS = r"(?:self-hosted|self-host|own|existing|current|internal|production|paid|on-prem(?:ise)?)"
+CURRENT_PROVIDER_CUES.append(
+    ("our <modifier> <provider>", re.compile(r"\bour\s+(?:" + _OUR_MODIFIERS + r"\s+){1,2}" + _PROVIDER_NAME + r"(?:'s)?\b", re.I))
+)
+# R5: explicit first-person present-tense use outside the cue list
+# ("Our mobile app calls Nominatim", "we reverse geocode ... with Mapbox",
+# "a Mapbox token used by our service"). A commitment is not a usage verb.
+CURRENT_PROVIDER_CUES.extend([
+    ("our <thing> calls <provider>", re.compile(r"\bour\s+(?:[\w-]+\s+){1,3}(?:calls|uses|queries|hits)\s+(?:the\s+)?" + _PROVIDER_NAME + r"\b", re.I)),
+    ("we <geo verb> ... with <provider>", re.compile(r"\bwe\s+(?:reverse[- ]geocode|geocode|route|call|query|serve|power)\b[^.?!\n]{0,50}?\bwith\s+(?:the\s+)?" + _PROVIDER_NAME + r"\b", re.I)),
+    ("<provider> ... used by our", re.compile(_PROVIDER_NAME + r"(?:\s+[\w-]+){0,3}\s+used\s+by\s+our\b", re.I)),
+])
+# R1-R4 keep the eval-freeze-v2 behaviour: possessive "our <provider> ..." and
+# "<provider> customer" count; "existing project" counts only with the provider
+# named; an incident/error report alone does not set a provider.
 
 
 def _canon_provider(name: str) -> str | None:
@@ -452,27 +485,160 @@ _EVALUATION_PREFIX = re.compile(
     r"\b(?:can|could|should|would|shall|may|might|do|does|did|if|whether|to|why\s+not)\s+$", re.I
 )
 
+# R14: the schema enum holds one canonical provider. When the user states current
+# use of 2+ different providers, keep the one named next to the record's API;
+# otherwise the earliest cue. Compared or migration-target providers never count.
+_R14_API_WORDS = {
+    "directions": r"direction|rout",
+    "distance_matrix": r"matrix|distance|table",
+    "autocomplete": r"autocomplete|autosuggest|type-ahead|search",
+    "reverse_geocode": r"reverse|geocod",
+}
 
-def extract_current_provider(text: str) -> tuple[str | None, str | None]:
-    """Return (canonical provider, cue name) for the earliest current-use cue, else (None, None)."""
-    best: tuple[int, str, str] | None = None
+
+def extract_current_provider(text: str, api: str | None = None) -> tuple[str | None, str | None]:
+    """Return (canonical provider, cue name) for the current-use cue, else (None, None)."""
+    hits: list[tuple[int, int, str, str]] = []
     for cue, pat in CURRENT_PROVIDER_CUES:
         for m in pat.finditer(text):
             if _EVALUATION_PREFIX.search(text[max(0, m.start() - 20):m.start()]):
                 continue
             prov = _canon_provider(m.group("prov"))
-            if prov and (best is None or m.start() < best[0]):
-                best = (m.start(), prov, cue)
-    if best is None:
+            if prov:
+                hits.append((m.start(), m.end(), prov, cue))
+    if not hits:
         return None, None
-    return best[1], best[2]
+    # Earliest cue wins; ties keep the cue-list order (stable sort on start only).
+    hits.sort(key=lambda h: h[0])
+    if api and len({h[2] for h in hits}) >= 2:
+        api_words = _R14_API_WORDS.get(api)
+        for st, en, prov, cue in hits:
+            if api_words and re.search(api_words, text[max(0, st - 40):en + 40], re.I):
+                return prov, cue
+    return hits[0][2], hits[0][3]
+
+
+# CF2: more India phrasings ("for an India-only app", "as well as India"); an
+# "India-only" followed by data/residency/hosting is a data-residency
+# requirement, not a region (see R9), so it is excluded.
+_INDIA_CF2 = (
+    r"\b(?:(?:in|across|for|throughout|within)\s+an?\s+India(?:-only|-wide)?\b(?!\s+(?:data|residency|hosting|storage))"
+    r"|as\s+well\s+as\s+India\b)"
+)
+# CF2: closed list of countries stated in GT v2.5 user text (India plus 10 others).
+_COUNTRY_RE = r"(?P<c>India|Nepal|Bhutan|Bangladesh|Sri\s+Lanka|Pakistan|Indonesia|Thailand|Singapore|United\s+Arab\s+Emirates|UK)"
+
+
+def _canon_country(c: str) -> str:
+    return re.sub(r"\s+", " ", c)
+
+
+_COUNTRY_PREP = re.compile(
+    r"\b(?:in|across|for|throughout|within)\s+" + _COUNTRY_RE + r"\b(?![-'])",
+    re.I,
+)
+
+
+def _first_country(q: str) -> str | None:
+    """CF2: first non-India country from the closed list after a location
+    preposition (same prepositions as the existing India rule)."""
+    for m in _COUNTRY_PREP.finditer(q):
+        c = _canon_country(m.group("c"))
+        if c != "India":
+            return c
+    return None
+
+
+# R10: naming the India price list/charges/free cap states the India region.
+_INDIA_PRICE_R10 = r"\bIndia\s+(?:[\w-]+\s+){0,3}(?:charges|pricing|prices?|rates?|free\s+cap|price\s+(?:list|card))\b"
+
+
+# R7: a country counts when it follows a location preposition or is chained to
+# such a country with "and", "," or "as well as" ("in India and Nepal").
+_REGION_LIST_R7 = re.compile(
+    r"\b(?:in|across|for|throughout|within|cover|covers|covering)\s+" + _COUNTRY_RE.replace("?P<c>", "")
+    + r"(?:\s*(?:,|and|as\s+well\s+as)\s+" + _COUNTRY_RE.replace("?P<c>", "") + r")*\b(?![-'])",
+    re.I,
+)
+_COUNTRY_ANY = re.compile(_COUNTRY_RE + r"\b(?![-'])")
+
+
+def _multi_region(q: str, region: str) -> str:
+    """R7: all closed-list countries in a location context, alphabetical,
+    joined by ", " (the schema types region as a single string)."""
+    found: list[tuple[int, str]] = []
+    for lm in _REGION_LIST_R7.finditer(q):
+        for cm in _COUNTRY_ANY.finditer(q, lm.start(), lm.end()):
+            found.append((cm.start(), _canon_country(cm.group("c"))))
+    # Alphabetical order so the value does not depend on mention order.
+    names = {c for _pos, c in found} | {region}
+    return ", ".join(sorted(names))
+
+
+# R6: technical constraints = a user-stated requirement on how the API must be
+# deployed or called: traffic need, request rate, own self-hosting/on-prem
+# deployment, data residency. "no/without traffic" counts wherever stated (as in
+# the eval-freeze-v2 regex); the other kinds count only in a declarative
+# sentence (not a question), so capabilities asked about ("Which APIs give
+# traffic-aware ETAs?", "If we self-host OSRM ...?") are not constraints.
+# Request sizes (stops, matrix size), storage/caching, language and SLA asks are
+# not included. Values are the verbatim span; several are joined by "; ".
+# A stated request rate is a fact about the user's load even inside a question
+# ("... at about 5 requests per second?"), so rates count everywhere too.
+_TC_ALWAYS = re.compile(
+    r"\b(?:no\s+(?:live\s+)?traffic(?:\s+needed)?|without\s+(?:live\s+)?traffic)\b"
+    r"|\b\d[\d,]*\s+(?:[\w-]+\s+){0,2}(?:requests|calls|pings|queries|lookups)\s+(?:a|per)\s+second\b|\b\d+\s+(?:rps|qps)\b",
+    re.I,
+)
+_TC_DECLARATIVE = [
+    re.compile(r"\btraffic-aware\b", re.I),
+    re.compile(r"\b(?:our|we)\s+(?P<sh>self-host(?:ed|ing)?)\b", re.I),
+    re.compile(r"\bon-prem(?:ise)?\b", re.I),
+    re.compile(r"\b[\w-]+-only\s+data\s+residency\b|\bdata\s+residency\s+in\s+\w+\b", re.I),
+]
+
+
+def _sentence_is_question(q: str, pos: int) -> bool:
+    m = re.compile(r"[.?!\n]").search(q, pos)
+    return bool(m and m.group(0) == "?")
+
+
+def _technical_constraints_r6(q: str) -> str | None:
+    hits: list[tuple[int, str]] = []
+    for m in _TC_ALWAYS.finditer(q):
+        hits.append((m.start(), m.group(0).strip()))
+    for pat in _TC_DECLARATIVE:
+        for m in pat.finditer(q):
+            if _sentence_is_question(q, m.end()):
+                continue
+            val = m.group("sh") if "sh" in pat.groupindex and m.group("sh") else m.group(0)
+            hits.append((m.start(), val.strip()))
+    out: list[str] = []
+    for _pos, h in sorted(hits):
+        if h.lower() not in [o.lower() for o in out]:
+            out.append(h)
+    return "; ".join(out) if out else None
+
+
+# R12: a named person/role/team who decides, approves or signs off.
+_DECISION_MAKER_R12 = re.compile(
+    r"\b(?:our|the)\s+(?P<who>(?:CTO|CEO|CFO|COO|founder|VP\s+[\w ]{2,30}?|head\s+of\s+[\w ]{2,30}?|"
+    r"procurement(?:\s+team)?|finance(?:\s+team)?|legal(?:\s+team)?|[\w-]+\s+manager))\s+"
+    r"(?:decides|will\s+decide|must\s+approve|approves|will\s+approve|signs?\s+off|has\s+the\s+final\s+say)\b",
+    re.I,
+)
 
 
 def extract_qualification(question: str, api: str, vocab: dict) -> dict:
     # User turns only: assistant lines in history-format questions are never mined.
     q = user_text(question or "")
     use_case = None
-    m = re.search(r"\bWe are an?\s+([^.?\n]{3,80})", q)
+    # CF4: no length cap (the old 80-character cap cut AC-234 mid-word).
+    m = re.search(r"\bWe are an?\s+([^.?\n]{3,})", q)
+    if m is None:
+        # R13: other self-descriptions: "We're a/an X", "We run a/an X"; the
+        # noun phrase stops before a following "and <verb>" clause.
+        m = re.search(r"\b(?:We're|We\s+run)\s+an?\s+((?:(?!\s+and\s+(?:expect|need|want|plan|are|use)\b)[^.?\n]){3,})", q)
     if m:
         use_case = m.group(1).strip().rstrip(",")
     if use_case is None:
@@ -485,17 +651,28 @@ def extract_qualification(question: str, api: str, vocab: dict) -> dict:
         if m:
             use_case = m.group(0)[4:].strip()  # drop 'Our '
 
+    # region: India phrasings, then CF2 other countries, R10 India price list,
+    # R7 several countries; R8 (city only), R9 (data residency) and R11
+    # ("global") set no region.
     region = None
-    if re.search(r"\b(?:in|across|for|throughout|across)\s+India\b", q, re.I):
+    if re.search(r"\b(?:in|across|for|throughout)\s+India\b", q, re.I):
         region = "India"
     elif re.search(r"\bIndian\s+(?:cities|city|market|price|pricing)\b", q, re.I):
         region = "India"
     elif re.search(r"\bIndia(?:n)?\s+price list\b", q, re.I):
         region = "India"
+    elif re.search(_INDIA_CF2, q, re.I):
+        region = "India"
+    if region is None:
+        region = _first_country(q)
+    if region is None and re.search(_INDIA_PRICE_R10, q, re.I):
+        region = "India"
+    if region is not None:
+        region = _multi_region(q, region)
 
     monthly_volume = extract_monthly_volume(q)
 
-    current_provider, _cue = extract_current_provider(q)
+    current_provider, _cue = extract_current_provider(q, api)
 
     timeline = extract_timeline(q)
 
@@ -509,17 +686,12 @@ def extract_qualification(question: str, api: str, vocab: dict) -> dict:
     if bm:
         budget = bm.group(0).strip()
 
-    technical_constraints = None
-    cm = re.search(
-        r"\b(\d+\s+requests per second|\d+\s+rps|self-host(?:ed|ing)?|"
-        r"on-prem(?:ise)?|no live traffic|without traffic)\b",
-        q,
-        re.I,
-    )
-    if cm:
-        technical_constraints = cm.group(0).strip()
+    technical_constraints = _technical_constraints_r6(q)
 
     decision_maker = None
+    dmm = _DECISION_MAKER_R12.search(q)
+    if dmm:
+        decision_maker = dmm.group("who").strip()
 
     use_case_api = {"api": api, "use_case": use_case}
     required = vocab["qualification_required_fields"]
@@ -798,13 +970,71 @@ def load_gt(path: Path = DEFAULT_GT) -> tuple[pd.DataFrame, pd.DataFrame]:
     return data, cites
 
 
+class LabelOverrideError(RuntimeError):
+    """label_overrides.json is missing, or an override does not match the GT row."""
+
+
+def load_label_overrides(path: Path = LABEL_OVERRIDES_PATH) -> dict:
+    """Approved label corrections (GT v2.6 L1/L2), keyed by record_id.
+
+    The file is required. A missing file raises ``LabelOverrideError`` instead
+    of returning no overrides, which would silently drop L1 and L2.
+    """
+    if not path.exists():
+        raise LabelOverrideError(
+            f"label overrides file is required and was not found: {path}"
+        )
+    return json.loads(path.read_text(encoding="utf-8"))["overrides"]
+
+
+_OVERRIDE_FIELDS = {"intent", "sub_intent", "primary_team", "api"}
+
+
+def apply_label_overrides(row: pd.Series, overrides: dict, vocab: dict) -> tuple[pd.Series, list[str]]:
+    """Return the row with approved label overrides applied (the GT file is not edited).
+
+    Each override names the GT values it expects (``from``) and the new ones
+    (``to``). A value that no longer matches the GT, a value outside the
+    vocabulary or a sub_intent outside its intent raises ``LabelOverrideError``.
+    The override is not applied and is not reported as a mapping warning.
+    Everything the mapper derives from labels (comparison, responsible_role.team,
+    default owner) then follows the overridden row.
+    """
+    ov = overrides.get(str(row["id"]))
+    if not ov:
+        return row, []
+    issues: list[str] = []
+    for col, old in ov["from"].items():
+        if str(row[col]) != old:
+            issues.append(f"label_override_stale:{col}:gt={row[col]},expected={old}")
+    to = ov["to"]
+    bad = [c for c in to if c not in _OVERRIDE_FIELDS]
+    intent = to.get("intent", str(row["intent"]))
+    sub = to.get("sub_intent", str(row["sub_intent"]))
+    if (bad or intent not in vocab["intents"] or sub not in vocab["intent_to_sub_intents"].get(intent, [])
+            or to.get("primary_team", "Sales") not in vocab["teams"] or to.get("api", "directions") not in vocab["apis"]):
+        issues.append("label_override_invalid")
+    if issues:
+        raise LabelOverrideError(
+            f"{row['id']}: label override is stale or broken and was not applied: "
+            + "; ".join(issues)
+        )
+    row = row.copy()
+    for col, val in to.items():
+        row[col] = val
+    return row, []
+
+
 def map_all(gt_path: Path = DEFAULT_GT, vocab: dict | None = None) -> tuple[list[dict], list[dict]]:
     vocab = vocab or load_vocab()
     data, cites = load_gt(gt_path)
+    overrides = load_label_overrides()
     envelopes = []
     issue_rows = []
     for _, row in data.iterrows():
+        row, ov_issues = apply_label_overrides(row, overrides, vocab)
         env, issues = map_record(row, vocab, cites)
+        issues = ov_issues + issues
         envelopes.append(env)
         for iss in issues:
             issue_rows.append({"record_id": env["record_id"], "issue": iss})

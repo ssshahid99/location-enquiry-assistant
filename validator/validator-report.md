@@ -1,6 +1,6 @@
 # C1 validator report
 
-Generated: 2026-11-14T23:42:06+05:30
+Generated: 2026-11-16T14:09:11+05:30
 GT source (read only): `/workspace/capstone-trackb/data/gt_v2_5.xlsx`.
 Schemas: `schemas/*.schema.json` version 1.0.0.
 Vocabulary: `vocab/controlled-vocabulary.json` version 1.0.0.
