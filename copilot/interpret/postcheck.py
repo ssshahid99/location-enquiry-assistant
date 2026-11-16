@@ -44,11 +44,11 @@ _QUAL_KEYS = (
     "decision_maker",
 )
 _RULE_WINS = {"region", "monthly_volume", "current_provider"}
-_PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "interp-v1.txt"
+_PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "interp-v2.txt"
 
 
 def prompt_version() -> str:
-    """Version header of ``prompts/interp-v1.txt``."""
+    """Version header of ``prompts/interp-v2.txt``."""
     for line in _PROMPT_PATH.read_text(encoding="utf-8").splitlines():
         if line.startswith("prompt_version:"):
             return line.split(":", 1)[1].strip()

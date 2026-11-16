@@ -1,0 +1,44 @@
+{
+ "version": "kw-v2",
+ "source": "docs (spec.md \u00a72 l.43-50/58-65, \u00a75 l.142; gt-v2.6-rules.md l.10, l.49-50) + tune split only (split_ids.json 'tune'); never dev/frozen/holdout",
+ "applies": "ONLY on the rules-only (abstain=true) path; first matching rule wins; matched against the customer's quoted message when a CRM/ticket wrapper is present, else the user turn; latest user turn with a hit wins",
+ "flags": "IGNORECASE",
+ "rules": [
+  [
+   "human_handoff",
+   "\\b(production\\b.{0,40}\\b(degraded|down|outage)|PRODUCTION:|outage|leak(ed)?\\b|pushed\\b.{0,40}\\bkey|public github|bot attack|committed[- ]use|on-prem|overcharg|restore (it|service)|credits ran out|government client|custom contract|enterprise (price|pricing|contract))"
+  ],
+  [
+   "docs_how_to",
+   "(public nominatim|nominatim\\.openstreetmap\\.org|router\\.project-osrm\\.org|can our chatbot recommend|\\bin our ui\\b|which option gives|\\bavoid\\b)"
+  ],
+  [
+   "pricing_comparison",
+   "(\\bvs\\.?\\b|\\bversus\\b|on each provider|what would each cost|each cost|\\bcheaper\\b|options and (monthly )?cost|compare (the )?(cost|price|pricing)|compare\\b.{0,60}\\b(and|vs|with)\\b.{0,80}\\b(requests|calls|lookups|elements|sessions)\\b.{0,20}\\b(a|per) month)"
+  ],
+  [
+   "pricing_quote",
+   "(\\bcost\\b|\\bcosts\\b|\\bprice\\b|\\bpricing\\b|\\bbill(ed|ing)?\\b|\\bfree\\b|\\bcredits?\\b|\\bcharges?\\b|how much|\\bINR\\b|rupees|session tokens?)"
+  ],
+  [
+   "troubleshooting",
+   "(\\b[45]\\d\\d\\b|ZERO_RESULTS|REQUEST_DENIED|INVALID_|OVER_\\w*LIMIT|_EXCEEDED|NoSegment|\\bfail(s|ed|ing)?\\b|\\breject(s|ed)?\\b|not authorized|\\bwrong\\b|incorrect|\\bbug\\b|\\berrors?\\b|doesn'?t (return|match|work)|never (returns?|appears?)|returns? (nothing|non-|places in)|still see|impossibly|snaps onto|isn'?t the limit|\\bwhy\\??$|got blocked|only (seems to|ever) |gives a different|returns a street|is the response broken)"
+  ],
+  [
+   "sales_qualification",
+   "(what do you recommend|what should we ask|\\bprospect\\b|before recommending|which documented parameters matter|for our [\\w -]{0,30}fleet|truck routing)"
+  ],
+  [
+   "coverage_limits",
+   "(rate limits?|\\bquota\\b|throughput|per minute|request limit|\\blimits?\\b we|\\bcap\\b|\\b(nepal|bhutan|bangladesh|sri lanka|pakistan|indonesia|jakarta|thailand|singapore|dubai|uae|kathmandu|colombo)\\b|\\bcountries\\b|\\b(hindi|bengali|telugu|tamil|kannada)\\b|in india\\?)"
+  ],
+  [
+   "capability_match",
+   "(\\bwhich\\b.{0,40}\\b(apis?|providers?|geocoders?|engines?)\\b|\\bsupport(s)?\\b|can .{0,40}\\b(give|suggest|return|get)\\b)"
+  ],
+  [
+   "docs_how_to",
+   "(how (do|can|should) (we|i)\\b|\\brestrict\\b|\\blimit\\b.{0,40}\\bto\\b|\\bparameters?\\b|\\bfields?\\b|\\bunits?\\b|authenticat|allowed|\\bOK\\?|licen[cs]e|\\bstore\\b|display|\\breturn only\\b|\\bretrieve only\\b|\\bfilter\\b|which worldview|\\bmean\\??)"
+  ]
+ ]
+}

@@ -17,7 +17,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from . import postcheck, rules, seam
+from . import fewshot, postcheck, rules, seam
 from copilot.llm.client import (
     DEFAULT_MODEL,
     BudgetExceeded,
@@ -29,8 +29,7 @@ from copilot.llm.client import (
     estimate_text_tokens,
 )
 
-_PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "interp-v1.txt"
-_FEWSHOT_PATH = Path(__file__).resolve().parent / "fewshot_ids.json"
+_PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "interp-v2.txt"
 _MAX_HISTORY_TURNS = 6
 _MAX_HISTORY_CHARS = 1600
 _TEMPERATURE = 0
@@ -55,15 +54,6 @@ def _load_prompt() -> dict[str, str]:
     return sections
 
 
-def _fewshot_ids() -> list[str]:
-    data = json.loads(_FEWSHOT_PATH.read_text(encoding="utf-8"))
-    if isinstance(data, dict):
-        data = data.get("record_ids", [])
-    if not isinstance(data, list):
-        return []
-    return [item for item in data if isinstance(item, str)]
-
-
 def _cap_history(turns: list[dict]) -> list[dict]:
     trimmed = list(turns)[-_MAX_HISTORY_TURNS:]
     while len(trimmed) > 1 and sum(len(turn["text"]) for turn in trimmed) > _MAX_HISTORY_CHARS:
@@ -81,11 +71,7 @@ def _render_history(turns: list[dict]) -> str:
     return "\n".join(f"[{turn['role']}] {turn['text']}" for turn in turns)
 
 
-def build_messages(data: dict, extraction: dict) -> list[dict]:
-    """System prompt plus one user message. Few-shot ids are empty in this version."""
-    sections = _load_prompt()
-    system = sections.get("SYSTEM") or ""
-    template = sections.get("USER") or "MESSAGE: <<MESSAGE>>"
+def _render_user(template: str, data: dict, extraction: dict) -> str:
     history = _cap_history(
         [
             {"role": turn["role"], "text": turn["text"]}
@@ -93,19 +79,30 @@ def build_messages(data: dict, extraction: dict) -> list[dict]:
             if turn.get("role") in {"user", "assistant"}
         ]
     )
-    user = (
+    return (
         template.replace("<<HISTORY>>", _render_history(history))
         .replace("<<KNOWN>>", json.dumps(data.get("known_facts") or [], ensure_ascii=False, sort_keys=True))
         .replace("<<RULE_HINTS>>", json.dumps(rules.to_hints(extraction), ensure_ascii=False, sort_keys=True))
         .replace("<<MESSAGE>>", data.get("query") or "")
     )
-    # fewshot_ids.json stays empty: question text and template_family are not tracked.
-    # A non-empty id list without those fields would be an invented example, so refuse it.
-    if _fewshot_ids():
-        raise RuntimeError(
-            "fewshot_ids.json lists records but this checkout has no question text to embed"
+
+
+def build_messages(data: dict, extraction: dict) -> list[dict]:
+    """System prompt, runtime few-shot pairs (zero when the GT file is absent), then the user message."""
+    sections = _load_prompt()
+    system = sections.get("SYSTEM") or ""
+    template = sections.get("USER") or "MESSAGE: <<MESSAGE>>"
+    user = _render_user(template, data, extraction)
+    messages = [{"role": "system", "content": system}]
+    for example in fewshot.load_examples():
+        rendered = _render_user(
+            template,
+            example,
+            rules.extract(example["history"], example["query"]),
         )
-    messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+        messages.append({"role": "user", "content": rendered})
+        messages.append({"role": "assistant", "content": example["target"]})
+    messages.append({"role": "user", "content": user})
     return messages
 
 
