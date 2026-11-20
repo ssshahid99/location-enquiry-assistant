@@ -1,7 +1,7 @@
 prompt_version: interp-v2
 contract: interpretation_output v0.2.0
 thinking: disabled via chat_template_kwargs enable_thinking=false (smoke-verified); the post-check strips think blocks either way.
-few_shot: record IDs only in fewshot_ids.json; question text is loaded at runtime from the local GT file (TRACKB_GT_CSV). Without it the prompt runs zero-shot.
+few_shot: record IDs only in fewshot_ids.json; question text is loaded at runtime from TRACKB_GT_CSV. Few-shot is required unless TRACKB_FEWSHOT=off.
 intent_definitions: derived from spec/spec.md §2 and §5, docs/gt-v2.6-rules.md (L1, L2, source text) and docs/activity-2-interpretation-design.md §5; no eval record text.
 
 === SYSTEM ===
@@ -45,7 +45,7 @@ JSON shape:
 {"intent":"","sub_intent":null,"api":"","team":"","confidence":{"intent":null,"api":null,"team":null},"qualification":{"use_case":{"value":null,"evidence":null},"region":{"value":null,"evidence":null},"monthly_volume":{"value":null,"evidence":null},"current_provider":{"value":null,"evidence":null},"timeline":{"value":null,"evidence":null},"budget":{"value":null,"evidence":null},"technical_constraints":{"value":null,"evidence":null},"decision_maker":{"value":null,"evidence":null}}}
 
 === FEWSHOT ===
-(loaded at runtime from fewshot_ids.json + TRACKB_GT_CSV; see fewshot.py)
+(loaded at runtime from fewshot_ids.json + TRACKB_GT_CSV; TRACKB_FEWSHOT=off is the only zero-shot opt-out. see fewshot.py)
 
 === USER ===
 HISTORY:

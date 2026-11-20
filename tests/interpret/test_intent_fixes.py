@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 from copilot.interpret import fewshot, seam
-from copilot.interpret.fewshot import FewshotPoolError
+from copilot.interpret.fewshot import FewshotLoadError, FewshotPoolError, clear_fewshot_cache
 from copilot.interpret.interpret import build_messages
 from copilot.interpret.rules import (
     INTENT_KEYWORDS,
@@ -21,6 +21,8 @@ from copilot.interpret.rules import (
 )
 from copilot.llm.client import LLMError, estimate_input_tokens
 from copilot.interpret import interpret
+from copilot.interpret.run_batch import main as batch_main
+from copilot.interpret.run_batch import run_batch
 from tests.support.helpers import ScriptedClient, completion, model_json
 
 _INTENTS = (
@@ -86,10 +88,16 @@ def _write_gold(path: Path, records: list[dict]) -> None:
 
 
 def _bind(monkeypatch, ids: list[str], csv_path: Path, gold_path: Path) -> None:
+    monkeypatch.delenv("TRACKB_FEWSHOT", raising=False)
     monkeypatch.setenv("TRACKB_GT_CSV", str(csv_path))
     monkeypatch.setenv("TRACKB_FEWSHOT_GOLD", str(gold_path))
     monkeypatch.setattr(fewshot, "fewshot_ids", lambda path=fewshot.IDS_PATH: list(ids))
-    fewshot._load.cache_clear()
+    clear_fewshot_cache()
+
+
+def _require(monkeypatch) -> None:
+    monkeypatch.delenv("TRACKB_FEWSHOT", raising=False)
+    clear_fewshot_cache()
 
 
 def _messages_for(query: str, history: list | None = None) -> list[dict]:
@@ -97,19 +105,129 @@ def _messages_for(query: str, history: list | None = None) -> list[dict]:
     return build_messages(data, extract(history or [], query))
 
 
-def test_fewshot_absent_gt_is_zero_shot(monkeypatch, caplog) -> None:
+def test_fewshot_unset_csv_raises(monkeypatch) -> None:
+    _require(monkeypatch)
     monkeypatch.delenv("TRACKB_GT_CSV", raising=False)
-    fewshot._load.cache_clear()
-    ids = fewshot.fewshot_ids()
-    assert ids
-    with caplog.at_level(logging.WARNING, logger="copilot.interpret"):
+    clear_fewshot_cache()
+    assert fewshot.fewshot_ids()
+    with pytest.raises(FewshotLoadError, match=r"TRACKB_GT_CSV is unset \(path=<unset>\)"):
+        fewshot.load_examples()
+
+
+def test_fewshot_missing_csv_raises(tmp_path, monkeypatch) -> None:
+    missing = tmp_path / "no-such-gt.csv"
+    _bind(monkeypatch, ["GT-TEST-001"], missing, tmp_path / "gold.jsonl")
+    with pytest.raises(FewshotLoadError, match="TRACKB_GT_CSV file does not exist or cannot be read"):
+        fewshot.load_examples()
+
+
+def test_fewshot_missing_gold_raises(tmp_path, monkeypatch) -> None:
+    _write_csv(
+        tmp_path / "gt.csv",
+        [
+            {
+                "id": "GT-TEST-001",
+                "question": "How do we set a parameter?",
+                "split": "eval",
+                "frozen_core": "false",
+                "template_family": "synthetic-gold",
+            }
+        ],
+    )
+    missing = tmp_path / "missing-gold.jsonl"
+    _bind(monkeypatch, ["GT-TEST-001"], tmp_path / "gt.csv", missing)
+    with pytest.raises(
+        FewshotLoadError,
+        match="TRACKB_FEWSHOT_GOLD file does not exist or cannot be read",
+    ):
+        fewshot.load_examples()
+
+
+def test_fewshot_missing_id_raises(tmp_path, monkeypatch) -> None:
+    _write_csv(
+        tmp_path / "gt.csv",
+        [
+            {
+                "id": "GT-TEST-001",
+                "question": "How do we set a parameter?",
+                "split": "eval",
+                "frozen_core": "false",
+                "template_family": "synthetic-present",
+            }
+        ],
+    )
+    _write_gold(tmp_path / "gold.jsonl", [_gold("GT-TEST-001")])
+    _bind(monkeypatch, ["GT-TEST-001", "GT-TEST-MISSING"], tmp_path / "gt.csv", tmp_path / "gold.jsonl")
+    with pytest.raises(FewshotLoadError, match="GT-TEST-MISSING is missing from TRACKB_GT_CSV"):
+        fewshot.load_examples()
+
+
+def test_fewshot_partial_load_raises(tmp_path, monkeypatch) -> None:
+    _write_csv(
+        tmp_path / "gt.csv",
+        [
+            {
+                "id": "GT-TEST-001",
+                "question": "How do we set a parameter?",
+                "split": "eval",
+                "frozen_core": "false",
+                "template_family": "synthetic-partial",
+            }
+        ],
+    )
+    _write_gold(
+        tmp_path / "gold.jsonl",
+        [_gold("GT-TEST-001"), _gold("GT-TEST-002")],
+    )
+    _bind(monkeypatch, ["GT-TEST-001", "GT-TEST-002"], tmp_path / "gt.csv", tmp_path / "gold.jsonl")
+    with pytest.raises(FewshotLoadError, match="GT-TEST-002 is missing from TRACKB_GT_CSV"):
+        fewshot.load_examples()
+
+
+@pytest.mark.parametrize("flag", ["off", "OFF", "0", "false"])
+def test_fewshot_off_is_zero_shot(tmp_path, monkeypatch, caplog, flag) -> None:
+    monkeypatch.setenv("TRACKB_FEWSHOT", flag)
+    monkeypatch.setenv("TRACKB_GT_CSV", str(tmp_path / "missing.csv"))
+    clear_fewshot_cache()
+    with caplog.at_level(logging.INFO, logger="copilot.interpret"):
         messages = _messages_for("hello there")
     assert [message["role"] for message in messages] == ["system", "user"]
-    expected = (
-        f"few-shot: TRACKB_GT_CSV unset or missing; running zero-shot ({len(ids)} ids skipped)"
+    infos = [record.getMessage() for record in caplog.records if record.levelno == logging.INFO]
+    assert infos.count("few-shot is disabled by TRACKB_FEWSHOT") == 1
+    client = ScriptedClient([completion(model_json())])
+    out = tmp_path / "run"
+    run_batch([{"record_id": "SYN-OFF", "query": "hello there"}], out_dir=out, client=client)
+    assert len(client.calls) == 1
+    meta = json.loads((out / "run_meta.json").read_text(encoding="utf-8"))
+    assert meta == {"fewshot_loaded": 0, "fewshot_mode": "off"}
+
+
+def test_run_batch_aborts_before_any_model_call(tmp_path, monkeypatch) -> None:
+    _require(monkeypatch)
+    monkeypatch.delenv("TRACKB_GT_CSV", raising=False)
+    clear_fewshot_cache()
+    client = ScriptedClient([completion(model_json())])
+    with pytest.raises(FewshotLoadError, match="TRACKB_GT_CSV"):
+        run_batch(
+            [{"record_id": "SYN-1", "query": "hello there"}],
+            out_dir=tmp_path / "out",
+            client=client,
+        )
+    assert client.calls == []
+    inputs = tmp_path / "in.jsonl"
+    inputs.write_text(
+        json.dumps({"record_id": "SYN-1", "query": "hello there"}) + "\n",
+        encoding="utf-8",
     )
-    warnings = [record.getMessage() for record in caplog.records if record.levelno >= logging.WARNING]
-    assert warnings.count(expected) == 1
+    constructed: list[object] = []
+    monkeypatch.setattr(
+        "copilot.interpret.run_batch.LLMClient",
+        lambda: constructed.append("constructed") or client,
+    )
+    with pytest.raises(FewshotLoadError, match="TRACKB_GT_CSV"):
+        batch_main(["--inputs", str(inputs), "--out", str(tmp_path / "cli")])
+    assert constructed == []
+    assert client.calls == []
 
 
 def test_fewshot_loads_pairs_from_synthetic_csv(tmp_path, monkeypatch) -> None:

@@ -15,6 +15,21 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+# Tests do not ship a GT CSV. Opt out explicitly; a test that needs the
+# required path deletes this variable. CI sets the same value in the workflow.
+os.environ.setdefault("TRACKB_FEWSHOT", "off")
+
+
+@pytest.fixture(autouse=True)
+def _clear_fewshot_cache():
+    from copilot.interpret.fewshot import clear_fewshot_cache
+
+    clear_fewshot_cache()
+    yield
+    clear_fewshot_cache()
+
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))

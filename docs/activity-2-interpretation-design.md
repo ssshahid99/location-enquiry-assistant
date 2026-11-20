@@ -143,6 +143,8 @@ USER: HISTORY: <turns, user and assistant, oldest first>  KNOWN: <known_facts JS
 RULE_HINTS: <rule hits JSON>  MESSAGE: <query>
 ```
 
+Question text is not in git. A run loads it from `TRACKB_GT_CSV` and fails if that file, the gold file, or any listed id is missing. `TRACKB_FEWSHOT=off` is the only zero-shot opt-out.
+
 Model output shape (smaller than the full output; the code builds the rest):
 
 ```json

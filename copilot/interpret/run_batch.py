@@ -6,6 +6,11 @@ Example: ``python -m copilot.interpret.run_batch --inputs in.jsonl --out runs/de
 
 Replay does not call the network. Live mode builds ``LLMClient``, which fails
 closed without ``TRACKB_API_KEY`` and ``TRACKB_CA_CERT``.
+
+Few-shot examples are loaded before any client is constructed or called.
+A missing ``TRACKB_GT_CSV`` aborts the run. ``TRACKB_FEWSHOT=off`` is the
+only zero-shot opt-out. ``run_meta.json`` records ``fewshot_mode`` and
+``fewshot_loaded``.
 """
 
 from __future__ import annotations
@@ -15,6 +20,7 @@ import json
 from pathlib import Path
 from typing import Any, Callable
 
+from copilot.interpret.fewshot import fewshot_status
 from copilot.interpret.interpret import interpret
 from copilot.llm.client import (
     DEFAULT_MODEL,
@@ -105,8 +111,17 @@ def run_batch(
     client=None,
     client_factory: Callable[[dict], Any] | None = None,
 ) -> Path:
-    """Write predictions and raw events. Returns the predictions path."""
+    """Write predictions and raw events. Returns the predictions path.
+
+    Loads few-shot examples before the client is used, so a missing GT file
+    aborts with no model call. ``run_meta.json`` records the few-shot mode.
+    """
+    status = fewshot_status()
     out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "run_meta.json").write_text(
+        json.dumps(status, ensure_ascii=False, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     predictions = out_dir / "predictions.jsonl"
     raw_path = out_dir / "raw_responses.jsonl"
     with predictions.open("w", encoding="utf-8") as pred_file, raw_path.open(
@@ -152,6 +167,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     records = load_jsonl(Path(args.inputs))
     out_dir = Path(args.out)
+    # Fail before LLMClient() so a missing GT file never touches the endpoint.
+    fewshot_status()
     if args.replay:
         replay_batch(records, Path(args.replay), out_dir)
     else:

@@ -22,4 +22,6 @@ jobs:
       - name: Run interpretation and validation tests against in-tree rules
         env:
           INTERPRET_VALIDATION: real
+          # CI has no GT CSV. Off is the explicit zero-shot opt-out.
+          TRACKB_FEWSHOT: "off"
         run: python -m pytest -q tests/interpret tests/llm tests/validation

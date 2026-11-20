@@ -88,7 +88,7 @@ def _render_user(template: str, data: dict, extraction: dict) -> str:
 
 
 def build_messages(data: dict, extraction: dict) -> list[dict]:
-    """System prompt, runtime few-shot pairs (zero when the GT file is absent), then the user message."""
+    """System prompt, runtime few-shot pairs (none when ``TRACKB_FEWSHOT=off``), then the user message."""
     sections = _load_prompt()
     system = sections.get("SYSTEM") or ""
     template = sections.get("USER") or "MESSAGE: <<MESSAGE>>"
